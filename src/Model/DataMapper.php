@@ -14,7 +14,7 @@ use Simples\Model\Error\SimplesHookError;
 use Simples\Persistence\Field;
 use Simples\Persistence\Filter;
 use Simples\Persistence\Fusion;
-use Simples\Core\Security\Auth;
+use Simples\Security\Auth;
 
 /**
  * Class DataMapper

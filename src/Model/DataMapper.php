@@ -2,19 +2,15 @@
 
 namespace Simples\Model;
 
-use Exception;
 use Simples\Data\Collection;
 use Simples\Data\Error\SimplesResourceError;
 use Simples\Data\Record;
-use Simples\Error\SimplesRunTimeError;
-use Simples\Helper\Date;
-use Simples\Kernel\Container;
 use Simples\Model\Error\SimplesActionError;
 use Simples\Model\Error\SimplesHookError;
+use Simples\Model\Resources\ModelParser;
+use Simples\Model\Resources\Timestamp;
 use Simples\Persistence\Field;
 use Simples\Persistence\Filter;
-use Simples\Persistence\Fusion;
-use Simples\Security\Auth;
 
 /**
  * Class DataMapper
@@ -22,6 +18,8 @@ use Simples\Security\Auth;
  */
 class DataMapper extends AbstractModel
 {
+    use Timestamp, ModelParser;
+
     /**
      * Method with the responsibility of create a record of model
      * @param array|Record $record (null)
@@ -98,12 +96,12 @@ class DataMapper extends AbstractModel
         }
 
         if ($this->destroyKeys) {
-            $where[] = $this->getDestroyFilter();
+            $where[] = $this->getDestroyFilter($this->destroyKeys['at']);
         }
 
         $array = $this
             ->source($this->getCollection())
-            ->relation($this->parseReadRelations())
+            ->relation($this->parseReadRelations($this->fields))
             ->fields($this->getActionFields($action, false))
             ->filter($where)// TODO: needs review
             ->recover($filters);
@@ -136,7 +134,7 @@ class DataMapper extends AbstractModel
 
         $action = Action::UPDATE;
 
-        $previous = $this->previous($record);
+        $previous = $this->previous($record, $this->hashKey);
 
         if ($previous->isEmpty()) {
             throw new SimplesResourceError([$this->getHashKey() => $record->get($this->getHashKey())]);
@@ -198,7 +196,7 @@ class DataMapper extends AbstractModel
 
         $action = Action::DESTROY;
 
-        $previous = $this->previous($record);
+        $previous = $this->previous($record, $this->hashKey);
 
         if ($previous->isEmpty()) {
             throw new SimplesResourceError([$this->getHashKey() => $record->get($this->getHashKey())]);
@@ -319,115 +317,5 @@ class DataMapper extends AbstractModel
             $fields = $this->getFields($action, $strict);
         }
         return $fields;
-    }
-
-    /**
-     * @param array $data
-     * @return array
-     * @throws Exception
-     */
-    protected function parseFilterFields(array $data): array
-    {
-        $filters = [];
-        foreach ($data as $name => $value) {
-            $field = $this->get($name);
-            if (is_null($field)) {
-                throw new SimplesRunTimeError("Invalid field name '{$name}'");
-            }
-            $filters[] = new Filter($field, $value);
-        }
-        return $filters;
-    }
-
-    /**
-     * @param array $filters
-     * @return array
-     */
-    protected function parseFilterValues(array $filters): array
-    {
-        $values = [];
-        /** @var Filter $filter */
-        foreach ($filters as $filter) {
-            $value = $filter->getParsedValue();
-            if (!is_array($value)) {
-                $values[] = $value;
-                continue;
-            }
-            $values = array_merge($values, $value);
-        }
-        return $values;
-    }
-
-    /**
-     * @param string $type
-     * @return null|string
-     */
-    protected function getTimestampValue(string $type)
-    {
-        switch ($type) {
-            case 'at':
-                return Date::now();
-                break;
-            case 'by':
-                return Auth::getUser();
-                break;
-        }
-        return null;
-    }
-
-    /**
-     * @return array
-     */
-    protected function parseReadRelations(): array
-    {
-        $join = [];
-        /** @var DataMapper $parent */
-        foreach ($this->getParents() as $relationship => $parent) {
-            $join[] = new Fusion(
-                $parent->getCollection(), $parent->getPrimaryKey(), $this->getCollection(), $relationship, false, false
-            );
-        }
-        foreach ($this->fields as $field) {
-            /** @var Field $field */
-            $reference = $field->getReferences();
-            if (off($reference, 'class')) {
-                /** @var DataMapper $instance */
-                $instance = Container::box()->make($reference->class);
-                $join[] = new Fusion($instance->getCollection(), $reference->referenced, $reference->collection, $field->getName());
-            }
-        }
-        return $join;
-    }
-
-    /**
-     * @param Record $record
-     * @return Record
-     */
-    protected function previous(Record $record): Record
-    {
-        $primaryKey = $this->getPrimaryKey();
-        $hashKey = $this->hashKey;
-
-        $filter = [$hashKey => $record->get($hashKey)];
-        if (!$record->get($hashKey)) {
-            $filter = [$primaryKey => $record->get($primaryKey)];
-        }
-
-        $previous = $this->fields(null)->read($filter)->current();
-        if (!$previous->isEmpty()) {
-            $record->set($primaryKey, $previous->get($primaryKey));
-            $record->set($hashKey, $previous->get($hashKey));
-        }
-
-        return $previous;
-    }
-
-    /**
-     * @return Filter
-     */
-    protected function getDestroyFilter(): Filter
-    {
-        $field = new Field($this->getCollection(), $this->destroyKeys['at'], Field::TYPE_DATETIME);
-        return new Filter($field, Filter::apply(Filter::RULE_BLANK));
     }
 }

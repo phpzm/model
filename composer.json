@@ -1,0 +1,38 @@
+{
+  "name": "phpzm/model",
+  "description": "Simples Model package",
+  "minimum-stability": "dev",
+  "keywords": [
+    "php",
+    "framework",
+    "api",
+    "simples"
+  ],
+  "homepage": "https://github.com/phpzm/model",
+  "license": "MIT",
+  "version": "1.0.0",
+  "type": "package",
+  "authors": [
+    {
+      "name": "William",
+      "email": "wilcorrea@gmail.com"
+    },
+    {
+      "name": "Ezio",
+      "email": "ezioadsr@gmail.com"
+    }
+  ],
+  "require": {
+    "php": ">=7.0",
+    "phpzm/data": "dev-master",
+    "phpzm/helper": "dev-master",
+    "phpzm/kernel": "dev-master",
+    "phpzm/persistence": "dev-master",
+    "phpzm/security": "dev-master"
+  },
+  "autoload": {
+    "psr-4": {
+      "Simples\\Model\\": "src/Model/"
+    }
+  }
+}

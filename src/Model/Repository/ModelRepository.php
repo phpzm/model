@@ -10,7 +10,7 @@ use Simples\Data\Error\SimplesValidationError;
 use Simples\Kernel\Container;
 use Simples\Model\AbstractModel;
 use Simples\Model\Action;
-use Simples\Model\Field;
+use Simples\Persistence\Field;
 
 /**
  * Class ModelRepository

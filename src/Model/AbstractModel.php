@@ -7,6 +7,7 @@ use Simples\Data\Record;
 use Simples\Error\SimplesRunTimeError;
 use Simples\Kernel\Container;
 use Simples\Persistence\Engine;
+use Simples\Persistence\Field;
 
 /**
  * Class AbstractModel

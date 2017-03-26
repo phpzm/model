@@ -5,6 +5,7 @@ namespace Simples\Model;
 use Simples\Data\Collection;
 use Simples\Data\Error\SimplesResourceError;
 use Simples\Data\Record;
+use Simples\Helper\JSON;
 use Simples\Model\Error\SimplesActionError;
 use Simples\Model\Error\SimplesHookError;
 use Simples\Model\Resources\ModelParser;
@@ -317,5 +318,34 @@ class DataMapper extends AbstractModel
             $fields = $this->getFields($action, $strict);
         }
         return $fields;
+    }
+
+    /**
+     * @return string
+     */
+    public function getJSON()
+    {
+        $fields = [];
+        /** @var Field $field */
+        foreach ($this->fields as $field) {
+            $fields[] = [
+                'field' => $field->getName(),
+                'type' => $field->getType(),
+                'label' => $field->option('label'),
+                'grid' => true,
+                'form' => ['create', 'show', 'edit'],
+                'search' => true,
+                'grids' => [
+                    'width' => ''
+                ],
+                'forms' => [
+                    'component' => '',
+                    'width' => '',
+                    'disabled' => false,
+                    'order' => 0
+                ]
+            ];
+        }
+        return JSON::encode($fields);
     }
 }

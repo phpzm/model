@@ -8,6 +8,7 @@ use Simples\Data\Validation;
 use Simples\Data\Validator;
 use Simples\Data\Error\SimplesValidationError;
 use Simples\Kernel\Container;
+use Simples\Kernel\Wrapper;
 use Simples\Model\AbstractModel;
 use Simples\Model\Action;
 use Simples\Persistence\Field;
@@ -102,18 +103,31 @@ class ModelRepository
     }
 
     /**
-     * @param Record|array $record
+     * @param Record|array $data
      * @param int $start
      * @param int $end
+     * @param array $order (null)
      * @return Collection
      */
-    public function read($record, $start = null, $end = null): Collection
+    public function search($data, array $order = null, $start = null, $end = null): Collection
     {
-        $record = Record::parse($record);
-
+        if (is_array($order) && count($order)) {
+            $this->model->order($order);
+        }
         if (!is_null($start) && !is_null($end)) {
             $this->model->limit([$start, $end]);
         }
+        return $this->model->read($data);
+    }
+
+    /**
+     * @param Record|array $record
+     * @return Collection
+     */
+    public function read($record): Collection
+    {
+        $record = Record::parse($record);
+
         return $this->model->read($record);
     }
 

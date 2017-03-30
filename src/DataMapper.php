@@ -81,7 +81,7 @@ class DataMapper extends AbstractModel
      */
     final public function read($record = null): Collection
     {
-        $record = Record::parse(of($record, []));
+        $record = Record::parse(coalesce($record, []));
 
         $action = Action::READ;
 
@@ -89,23 +89,23 @@ class DataMapper extends AbstractModel
             throw new SimplesHookError(get_class($this), $action, 'before');
         }
 
-        $where = [];
         $filters = [];
+        $values = [];
         if (!$record->isEmpty()) {
-            $where = $this->parseFilterFields($record->all());
-            $filters = $this->parseFilterValues($where);
+            $filters = $this->parseFilterFields($record->all());
+            $values = $this->parseFilterValues($filters);
         }
 
         if ($this->destroyKeys) {
-            $where[] = $this->getDestroyFilter($this->destroyKeys['at']);
+            $filters[] = $this->getDestroyFilter($this->destroyKeys['at']);
         }
 
         $array = $this
             ->source($this->getCollection())
             ->relation($this->parseReadRelations($this->fields))
             ->fields($this->getActionFields($action, false))
-            ->filter($where)// TODO: needs review
-            ->recover($filters);
+            ->filter($filters)// TODO: needs review
+            ->recover($values);
 
         $this->reset();
 

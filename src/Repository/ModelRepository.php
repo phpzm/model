@@ -103,13 +103,14 @@ class ModelRepository
     }
 
     /**
-     * @param Record|array $filter
+     * @param array $filter
+     * @param array $order (null)
      * @param int $start
      * @param int $end
-     * @param array $order (null)
+     * @param bool $trash
      * @return Collection
      */
-    public function search($filter, array $order = null, $start = null, $end = null): Collection
+    public function search(array $filter, array $order = null, $start = null, $end = null, $trash = false): Collection
     {
         if (is_array($order) && count($order)) {
             $this->model->order($order);
@@ -117,18 +118,19 @@ class ModelRepository
         if (!is_null($start) && !is_null($end)) {
             $this->model->limit([$start, $end]);
         }
-        return $this->model->read($filter);
+        return $this->model->read($filter, $trash);
     }
 
     /**
      * @param Record|array $record
+     * @param bool $trash
      * @return Collection
      */
-    public function read($record): Collection
+    public function read($record, $trash = false): Collection
     {
         $record = Record::parse($record);
 
-        return $this->model->read($record);
+        return $this->model->read($record, $trash);
     }
 
     /**
@@ -302,7 +304,6 @@ class ModelRepository
     }
 
     /**
-     * @SuppressWarnings("BooleanArgumentFlag")
      *
      * @param bool $logging
      * @return ModelRepository

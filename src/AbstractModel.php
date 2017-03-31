@@ -131,9 +131,10 @@ abstract class AbstractModel extends Engine
     /**
      * Read records with the filters informed
      * @param array|Record $record (null)
+     * @param bool $trash
      * @return Collection
      */
-    abstract public function read($record = null): Collection;
+    abstract public function read($record = null, $trash = false): Collection;
 
     /**
      * Update the record given
@@ -252,8 +253,7 @@ abstract class AbstractModel extends Engine
         $this->maps[$source] = $target;
     }
 
-    /**
-     * @SuppressWarnings("BooleanArgumentFlag");
+    /**;
      *
      * @param string $action
      * @param bool $strict

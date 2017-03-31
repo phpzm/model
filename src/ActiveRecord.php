@@ -72,9 +72,10 @@ class ActiveRecord extends AbstractModel
     /**
      * Read records with the filters informed
      * @param array|Record $record (null)
+     * @param bool $trash
      * @return Collection
      */
-    public function read($record = null): Collection
+    public function read($record = null, $trash = false): Collection
     {
         return Collection::make([]);
     }

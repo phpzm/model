@@ -76,10 +76,11 @@ class DataMapper extends AbstractModel
     /**
      * Read records with the filters informed
      * @param array|Record $record (null)
+     * @param bool $trash (false)
      * @return Collection
      * @throws SimplesHookError
      */
-    final public function read($record = null): Collection
+    final public function read($record = null, $trash = false): Collection
     {
         $record = Record::parse(coalesce($record, []));
 
@@ -97,7 +98,7 @@ class DataMapper extends AbstractModel
         }
 
         if ($this->destroyKeys) {
-            $filters[] = $this->getDestroyFilter($this->destroyKeys['at']);
+            $filters[] = $this->getDestroyFilter($this->destroyKeys['at'], $trash);
         }
 
         $array = $this
@@ -147,7 +148,7 @@ class DataMapper extends AbstractModel
 
         $record->setPrivate($this->getHashKey());
 
-        $update = $this->configureRecord($action, $record);
+        $update = $this->configureRecord($action, $record, $previous);
         $fields = $update->keys();
         $values = $update->values();
 
@@ -274,9 +275,10 @@ class DataMapper extends AbstractModel
     /**
      * @param string $action
      * @param Record $record
+     * @param Record|null $previous
      * @return Record
      */
-    private function configureRecord(string $action, Record $record): Record
+    private function configureRecord(string $action, Record $record, Record $previous = null): Record
     {
         $values = Record::make([]);
         $fields = $this->getActionFields($action);
@@ -287,7 +289,11 @@ class DataMapper extends AbstractModel
                 $value = $record->get($name);
             }
             if ($field->isCalculated()) {
-                $value = $field->calculate($record);
+                $immutable = $record;
+                if ($previous) {
+                    $immutable = $previous;
+                }
+                $value = $field->calculate($immutable);
                 $record->set($name, $value);
             }
             if (isset($value)) {
@@ -298,8 +304,7 @@ class DataMapper extends AbstractModel
         return $values;
     }
 
-    /**
-     * @SuppressWarnings("BooleanArgumentFlag");
+    /**;
      *
      * @param string $action
      * @param bool $strict

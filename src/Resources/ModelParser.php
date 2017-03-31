@@ -30,7 +30,7 @@ trait ModelParser
                 $filters[] = $value;
                 continue;
             }
-            $filters[] = new Filter($this->get($name), $value);
+            $filters[] = Filter::create($this->get($name), $value);
         }
         return $filters;
     }
@@ -48,7 +48,7 @@ trait ModelParser
                 continue;
             }
             /** @var Filter $filter */
-            $value = $filter->getParsedValue();
+            $value = $filter->getParsedValue($this->getDriver());
             if (!is_array($value)) {
                 $values[] = $value;
                 continue;
@@ -67,7 +67,7 @@ trait ModelParser
         $join = [];
         /** @var DataMapper $parent */
         foreach ($this->getParents() as $relationship => $parent) {
-            $join[] = new Fusion(
+            $join[] = Fusion::create(
                 $parent->getCollection(), $parent->getPrimaryKey(), $this->getCollection(), $relationship, false, false
             );
         }
@@ -77,7 +77,7 @@ trait ModelParser
             if (off($reference, 'class')) {
                 /** @var DataMapper $instance */
                 $instance = Container::box()->make($reference->class);
-                $join[] = new Fusion($instance->getCollection(), $reference->referenced, $reference->collection,
+                $join[] = Fusion::create($instance->getCollection(), $reference->referenced, $reference->collection,
                     $field->getName());
             }
         }
@@ -109,11 +109,13 @@ trait ModelParser
 
     /**
      * @param string $at
+     * @param bool $trash
      * @return Filter
      */
-    protected function getDestroyFilter(string $at): Filter
+    protected function getDestroyFilter(string $at, bool $trash = false): Filter
     {
         $field = new Field($this->getCollection(), $at, Field::TYPE_DATETIME);
-        return new Filter($field, Filter::apply(Filter::RULE_BLANK));
+
+        return Filter::create($field, null, Filter::RULE_BLANK, $trash);
     }
 }

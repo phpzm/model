@@ -103,13 +103,13 @@ class ModelRepository
     }
 
     /**
-     * @param Record|array $data
+     * @param Record|array $filter
      * @param int $start
      * @param int $end
      * @param array $order (null)
      * @return Collection
      */
-    public function search($data, array $order = null, $start = null, $end = null): Collection
+    public function search($filter, array $order = null, $start = null, $end = null): Collection
     {
         if (is_array($order) && count($order)) {
             $this->model->order($order);
@@ -117,7 +117,7 @@ class ModelRepository
         if (!is_null($start) && !is_null($end)) {
             $this->model->limit([$start, $end]);
         }
-        return $this->model->read($data);
+        return $this->model->read($filter);
     }
 
     /**

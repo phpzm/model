@@ -104,7 +104,7 @@ class DataMapper extends AbstractModel
             ->source($this->getCollection())
             ->relation($this->parseReadRelations($this->fields))
             ->fields($this->getActionFields($action, false))
-            ->filter($filters)// TODO: needs review
+            ->where($filters)// TODO: needs review
             ->recover($values);
 
         $this->reset();
@@ -161,7 +161,7 @@ class DataMapper extends AbstractModel
         $updated = $this
             ->source($this->getCollection())
             ->fields($fields)
-            ->filter([$filter])// TODO: needs review
+            ->where([$filter])// TODO: needs review
             ->change($values, [$filter->getValue()]);
 
         $this->reset();
@@ -221,14 +221,14 @@ class DataMapper extends AbstractModel
             $removed = $this
                 ->source($this->getCollection())
                 ->fields($fields)
-                ->filter($filters)// TODO: needs review
+                ->where($filters)// TODO: needs review
                 ->change($values, [$filter->getValue()]);
         }
 
         if (!isset($removed)) {
             $removed = $this
                 ->source($this->getCollection())
-                ->filter($filters)// TODO: needs review
+                ->where($filters)// TODO: needs review
                 ->remove([$record->get($this->getPrimaryKey())]);
         }
 
@@ -321,9 +321,10 @@ class DataMapper extends AbstractModel
     }
 
     /**
+     * @param int $options
      * @return string
      */
-    public function getJSON()
+    public function getJSON(int $options = 0)
     {
         $fields = [];
         /** @var Field $field */
@@ -346,6 +347,7 @@ class DataMapper extends AbstractModel
                 ]
             ];
         }
-        return JSON::encode($fields);
+
+        return JSON::encode($fields, $options);
     }
 }

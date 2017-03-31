@@ -4,7 +4,6 @@ namespace Simples\Model\Resources;
 
 use Exception;
 use Simples\Data\Record;
-use Simples\Error\SimplesRunTimeError;
 use Simples\Kernel\Container;
 use Simples\Model\DataMapper;
 use Simples\Persistence\Field;
@@ -26,11 +25,12 @@ trait ModelParser
     {
         $filters = [];
         foreach ($data as $name => $value) {
-            $field = $this->get($name);
-            if (is_null($field)) {
-                throw new SimplesRunTimeError("Invalid field name '{$name}'");
+            if (!$this->has($name)) {
+                $value['filter'] = $this->parseFilterFields($value['filter']);
+                $filters[] = $value;
+                continue;
             }
-            $filters[] = new Filter($field, $value);
+            $filters[] = new Filter($this->get($name), $value);
         }
         return $filters;
     }
@@ -42,8 +42,12 @@ trait ModelParser
     protected function parseFilterValues(array $filters): array
     {
         $values = [];
-        /** @var Filter $filter */
         foreach ($filters as $filter) {
+            if (is_array($filter)) {
+                $values = array_merge($values, $this->parseFilterValues($filter['filter']));
+                continue;
+            }
+            /** @var Filter $filter */
             $value = $filter->getParsedValue();
             if (!is_array($value)) {
                 $values[] = $value;

@@ -24,11 +24,11 @@
   ],
   "require": {
     "php": ">=7.0",
-    "phpzm/data": "dev-master",
-    "phpzm/helper": "dev-master",
-    "phpzm/kernel": "dev-master",
-    "phpzm/persistence": "dev-master",
-    "phpzm/security": "dev-master"
+    "phpzm/data": ">=1.0.3",
+    "phpzm/helper": ">=1.0.3",
+    "phpzm/kernel": ">=1.0.4",
+    "phpzm/persistence": ">=1.0.4",
+    "phpzm/security": ">=1.0.2"
   },
   "autoload": {
     "psr-4": {

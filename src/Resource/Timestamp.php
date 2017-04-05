@@ -1,6 +1,6 @@
 <?php
 
-namespace Simples\Model\Resources;
+namespace Simples\Model\Resource;
 
 use Simples\Helper\Date;
 use Simples\Security\Auth;

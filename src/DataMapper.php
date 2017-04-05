@@ -8,8 +8,8 @@ use Simples\Data\Record;
 use Simples\Helper\JSON;
 use Simples\Model\Error\SimplesActionError;
 use Simples\Model\Error\SimplesHookError;
-use Simples\Model\Resources\ModelParser;
-use Simples\Model\Resources\Timestamp;
+use Simples\Model\Resource\ModelParser;
+use Simples\Model\Resource\Timestamp;
 use Simples\Persistence\Field;
 use Simples\Persistence\Filter;
 
@@ -17,17 +17,21 @@ use Simples\Persistence\Filter;
  * Class DataMapper
  * @package Simples\Model
  */
-class DataMapper extends AbstractModel
+class DataMapper extends ModelAbstract
 {
+    /**
+     * @trait Timestamp, ModelParser
+     */
     use Timestamp, ModelParser;
 
     /**
      * Method with the responsibility of create a record of model
      * @param array|Record $record (null)
+     * @param string $alias ('create')
      * @return Record
      * @throws SimplesHookError
      */
-    final public function create($record = null): Record
+    final public function create($record = null, string $alias = null): Record
     {
         $record = Record::parse($record);
 
@@ -38,7 +42,7 @@ class DataMapper extends AbstractModel
             $record->import($create->all());
         }
 
-        $action = Action::CREATE;
+        $action = coalesce($alias, Action::CREATE);
 
         if (!$this->before($action, $record)) {
             throw new SimplesHookError(get_class($this), $action, 'before');
@@ -47,7 +51,7 @@ class DataMapper extends AbstractModel
             $record->set($this->hashKey, $this->hashKey());
         }
 
-        $create = $this->configureRecord($action, $record);
+        $create = $this->configureRecord(Action::CREATE, $record);
         $fields = $create->keys();
         $values = $create->values();
 
@@ -77,14 +81,15 @@ class DataMapper extends AbstractModel
      * Read records with the filters informed
      * @param array|Record $record (null)
      * @param bool $trash (false)
+     * @param string $alias ('read')
      * @return Collection
      * @throws SimplesHookError
      */
-    final public function read($record = null, $trash = false): Collection
+    final public function read($record = null, $trash = false, string $alias = null): Collection
     {
         $record = Record::parse(coalesce($record, []));
 
-        $action = Action::READ;
+        $action = coalesce($alias, Action::READ);
 
         if (!$this->before($action, $record)) {
             throw new SimplesHookError(get_class($this), $action, 'before');
@@ -104,7 +109,7 @@ class DataMapper extends AbstractModel
         $array = $this
             ->source($this->getCollection())
             ->relation($this->parseReadRelations($this->fields))
-            ->fields($this->getActionFields($action, false))
+            ->fields($this->getActionFields(Action::READ, false))
             ->where($filters)// TODO: needs review
             ->recover($values);
 
@@ -120,12 +125,13 @@ class DataMapper extends AbstractModel
     /**
      * Update the record given
      * @param array|Record $record (null)
+     * @param string $alias ('update')
      * @return Record
      * @throws SimplesActionError
      * @throws SimplesHookError
      * @throws SimplesResourceError
      */
-    final public function update($record = null): Record
+    final public function update($record = null, string $alias = null): Record
     {
         $record = Record::parse($record);
 
@@ -134,7 +140,7 @@ class DataMapper extends AbstractModel
             $record->import($parent->update($record)->all());
         }
 
-        $action = Action::UPDATE;
+        $action = coalesce($alias, Action::UPDATE);
 
         $previous = $this->previous($record, $this->hashKey);
 
@@ -148,7 +154,7 @@ class DataMapper extends AbstractModel
 
         $record->setPrivate($this->getHashKey());
 
-        $update = $this->configureRecord($action, $record, $previous);
+        $update = $this->configureRecord(Action::UPDATE, $record, $previous);
         $fields = $update->keys();
         $values = $update->values();
 
@@ -182,12 +188,13 @@ class DataMapper extends AbstractModel
     /**
      * Remove the given record of database
      * @param array|Record $record (null)
+     * @param string $alias ('destroy')
      * @return Record
      * @throws SimplesActionError
      * @throws SimplesHookError
      * @throws SimplesResourceError
      */
-    final public function destroy($record = null): Record
+    final public function destroy($record = null, string $alias = null): Record
     {
         $record = Record::parse($record);
 
@@ -196,7 +203,7 @@ class DataMapper extends AbstractModel
             $record->import($parent->destroy($record)->all());
         }
 
-        $action = Action::DESTROY;
+        $action = coalesce($alias, Action::DESTROY);
 
         $previous = $this->previous($record, $this->hashKey);
 
@@ -252,7 +259,7 @@ class DataMapper extends AbstractModel
      * @return int
      * @throws SimplesActionError
      */
-    public function count($record = null): int
+    final public function count($record = null): int
     {
         // Record
         $alias = 'count';
@@ -261,7 +268,7 @@ class DataMapper extends AbstractModel
                 new Field($this->getCollection(), $this->getPrimaryKey(), Field::AGGREGATOR_COUNT, ['alias' => $alias])
             ])
             ->limit(null)
-            ->read($record)->current();
+            ->read($record, false, $alias)->current();
 
         $this->reset();
 

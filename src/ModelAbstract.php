@@ -2,19 +2,22 @@
 
 namespace Simples\Model;
 
-use Simples\Data\Collection;
-use Simples\Data\Record;
 use Simples\Error\SimplesRunTimeError;
 use Simples\Kernel\Container;
-use Simples\Persistence\Engine;
+use Simples\Model\Resource\ModelTrigger;
 use Simples\Persistence\Field;
 
 /**
  * Class AbstractModel
  * @package Simples\Model
  */
-abstract class AbstractModel extends Engine
+abstract class ModelAbstract extends ModelContract
 {
+    /**
+     * @trait ModelTrigger
+     */
+    use ModelTrigger;
+
     /**
      * Connection id
      * @var string
@@ -99,11 +102,37 @@ abstract class AbstractModel extends Engine
     }
 
     /**
+     * Configure the instance with reference properties
+     * @param string $collection
+     * @param string $primaryKey
+     * @param string $relationship
+     * @return $this
+     * @throws SimplesRunTimeError
+     */
+    protected function configure(string $collection, string $primaryKey, string $relationship = '')
+    {
+        if ($this->collection) {
+            $this->parents[$relationship] = clone $this;
+            $this->add($relationship)->integer()->collection($collection)->update(false);
+            if (!$relationship) {
+                throw new SimplesRunTimeError("When extending one model you need give a name to relationship");
+            }
+        }
+        $this->collection = $collection;
+        $this->primaryKey = $primaryKey;
+
+        $this->add($this->hashKey)->hashKey();
+        $this->add($primaryKey)->primaryKey();
+
+        return $this;
+    }
+
+    /**
      * @return $this
      */
-    public static function box()
+    public static function instance()
     {
-        return Container::box()->make(static::class);
+        return Container::instance()->make(static::class);
     }
 
     /**
@@ -119,68 +148,6 @@ abstract class AbstractModel extends Engine
             $this->connection = env('DEFAULT_DATABASE');
         }
         return $this->connection;
-    }
-
-    /**
-     * Method with the responsibility of create a record of model
-     * @param array|Record $record (null)
-     * @return Record
-     */
-    abstract public function create($record = null): Record;
-
-    /**
-     * Read records with the filters informed
-     * @param array|Record $record (null)
-     * @param bool $trash
-     * @return Collection
-     */
-    abstract public function read($record = null, $trash = false): Collection;
-
-    /**
-     * Update the record given
-     * @param array|Record $record (null)
-     * @return Record
-     */
-    abstract public function update($record = null): Record;
-
-    /**
-     * Remove the given record of database
-     * @param array|Record $record (null)
-     * @return Record
-     */
-    abstract public function destroy($record = null): Record;
-
-    /**
-     * Get total of records based on filters
-     * @param array|Record $record (null)
-     * @return int
-     */
-    abstract public function count($record = null): int;
-
-    /**
-     * Configure the instance with reference properties
-     * @param string $collection
-     * @param string $primaryKey
-     * @param string $relationship
-     * @return $this
-     * @throws SimplesRunTimeError
-     */
-    protected function instance(string $collection, string $primaryKey, string $relationship = '')
-    {
-        if ($this->collection) {
-            $this->parents[$relationship] =  clone $this;
-            $this->add($relationship)->integer()->collection($collection)->update(false);
-            if (!$relationship) {
-                throw new SimplesRunTimeError("When extending one model you need give a name to relationship");
-            }
-        }
-        $this->collection = $collection;
-        $this->primaryKey = $primaryKey;
-
-        $this->add($this->hashKey)->hashKey();
-        $this->add($primaryKey)->primaryKey();
-
-        return $this;
     }
 
     /**
@@ -216,7 +183,7 @@ abstract class AbstractModel extends Engine
         }
 
         /** @var DataMapper $class */
-        $import = $class::box()->get($name);
+        $import = $class::instance()->get($name);
 
         $options = array_merge($import->getOptions(), $options);
 
@@ -263,107 +230,21 @@ abstract class AbstractModel extends Engine
     {
         $method = '';
         switch ($action) {
-            case Action::CREATE: {
+            case Action::CREATE:
                 $method = 'isCreate';
                 break;
-            }
-            case Action::READ: {
+            case Action::READ:
                 $method = 'isRead';
                 break;
-            }
-            case Action::UPDATE: {
+            case Action::UPDATE:
                 $method = 'isUpdate';
                 break;
-            }
-            case Action::RECOVER: {
+            case Action::RECOVER:
                 $method = 'isRecover';
                 break;
-            }
         }
 
         return $this->filterFields($this->getCollection(), $method, $strict);
-    }
-
-    /**
-     * @param string $collection
-     * @param string $method
-     * @param bool $strict
-     * @return array
-     */
-    private function filterFields(string $collection, string $method, bool $strict)
-    {
-        return array_filter($this->fields, function ($field) use ($collection, $method, $strict) {
-            if ($strict && $field->getCollection() !== $collection) {
-                return null;
-            }
-            if (!$method) {
-                return $field;
-            }
-            if ($method && $field->$method()) {
-                return $field;
-            }
-            return null;
-        });
-    }
-
-    /**
-     * @param string $action
-     * @param Record $record
-     */
-    public function configureFields(string $action, Record $record)
-    {
-        $action = ucfirst($action);
-        if (method_exists($this, "configureFields{$action}")) {
-            call_user_func_array([$this, "configureFields{$action}"], [$record]);
-        }
-        foreach ($this->maps as $source => $target) {
-            $record->set($target, $record->get($source));
-        }
-    }
-
-    /**
-     * This method is called before the operation be executed, the changes made in Record will be save
-     * @param string $action
-     * @param Record $record
-     * @param Record $previous
-     * @return bool
-     */
-    protected function before(string $action, Record $record, Record $previous = null): bool
-    {
-        $action = ucfirst($action);
-        if (method_exists($this, "before{$action}")) {
-            return call_user_func_array([$this, "before{$action}"], [$record, $previous]);
-        }
-        return true;
-    }
-
-    /**
-     * Triggered after operation be executed, the changes made in Record has no effect in storage
-     * @param string $action
-     * @param Record $record
-     * @return bool
-     */
-    protected function after(string $action, Record $record): bool
-    {
-        $action = ucfirst($action);
-        if (method_exists($this, "after{$action}")) {
-            return call_user_func_array([$this, "after{$action}"], [$record]);
-        }
-        return true;
-    }
-
-    /**
-     * @param string $action
-     * @param Record $record
-     * @return array
-     */
-    public function getDefaults(string $action, Record $record = null): array
-    {
-        $action = ucfirst($action);
-        if (method_exists($this, "getDefaults{$action}")) {
-            return call_user_func_array([$this, "getDefaults{$action}"], [$record]);
-        }
-        return [];
     }
 
     /**

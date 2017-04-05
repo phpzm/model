@@ -1,6 +1,6 @@
 <?php
 
-namespace Simples\Model\Resources;
+namespace Simples\Model\Resource;
 
 /**
  * Class Cache

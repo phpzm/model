@@ -1,6 +1,6 @@
 <?php
 
-namespace Simples\Model\Resources;
+namespace Simples\Model\Resource;
 
 use Exception;
 use Simples\Data\Record;
@@ -66,19 +66,23 @@ trait ModelParser
     {
         $join = [];
         /** @var DataMapper $parent */
-        foreach ($this->getParents() as $relationship => $parent) {
-            $join[] = Fusion::create(
-                $parent->getCollection(), $parent->getPrimaryKey(), $this->getCollection(), $relationship, false, false
-            );
+        foreach ($this->getParents() as $references => $parent) {
+            $collection = $parent->getCollection();
+            $referenced = $parent->getPrimaryKey();
+            $source = $this->getCollection();
+            $join[] = Fusion::create($collection, $referenced, $source, $references, false, false);
         }
         foreach ($fields as $field) {
             /** @var Field $field */
             $reference = $field->getReferences();
-            if (off($reference, 'class')) {
+            if (off($reference, 'fusion')) {
                 /** @var DataMapper $instance */
-                $instance = Container::box()->make($reference->class);
-                $join[] = Fusion::create($instance->getCollection(), $reference->referenced, $reference->collection,
-                    $field->getName());
+                $instance = Container::instance()->make($reference->class);
+                $collection = $instance->getCollection();
+                $referenced = $reference->referenced;
+                $source = $reference->collection;
+                $references = $field->getName();
+                $join[] = Fusion::create($collection, $referenced, $source, $references);
             }
         }
         return $join;

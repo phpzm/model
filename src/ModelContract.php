@@ -23,19 +23,20 @@ abstract class ModelContract extends Engine
     /**
      * Read records with the filters informed
      * @param array|Record $record (null)
-     * @param bool $trash
      * @param string $alias (null)
+     * @param bool $trash (false)
      * @return Collection
      */
-    abstract public function read($record = null, $trash = false, string $alias = null): Collection;
+    abstract public function read($record = null, string $alias = null, $trash = false): Collection;
 
     /**
      * Update the record given
      * @param array|Record $record (null)
      * @param string $alias (null)
+     * @param bool $trash (false)
      * @return Record
      */
-    abstract public function update($record = null, string $alias = null): Record;
+    abstract public function update($record = null, string $alias = null, bool $trash = false): Record;
 
     /**
      * Remove the given record of database
@@ -44,11 +45,4 @@ abstract class ModelContract extends Engine
      * @return Record
      */
     abstract public function destroy($record = null, string $alias = null): Record;
-
-    /**
-     * Get total of records based on filters
-     * @param array|Record $record (null)
-     * @return int
-     */
-    abstract public function count($record = null): int;
 }

@@ -79,17 +79,17 @@ class ModelRepository
 
     /**
      * @param Record|array $record
-     * @param bool $trash
      * @param string $action (null)
+     * @param bool $trash (false)
      * @return Collection
      */
-    public function read($record, $trash = false, string $action = null): Collection
+    public function read($record, string $action = null, $trash = false): Collection
     {
         $record = Record::parse($record);
 
         $action = coalesce($action, Action::READ);
 
-        return $this->model->read($record, $trash, $action);
+        return $this->model->read($record, $action, $trash);
     }
 
     /**
@@ -140,6 +140,18 @@ class ModelRepository
     }
 
     /**
+     * @param Record|array $record
+     * @return Record
+     * @throws SimplesValidationError
+     */
+    public function recycle($record): Record
+    {
+        $record = Record::parse($record);
+
+        return $this->model->recycle($record);
+    }
+
+    /**
      * @param array $record
      * @return int
      */
@@ -164,7 +176,7 @@ class ModelRepository
         if (!is_null($start) && !is_null($end)) {
             $this->model->limit([$start, $end]);
         }
-        return $this->model->read($filter, $trash);
+        return $this->model->read($filter, null, $trash);
     }
 
     /**

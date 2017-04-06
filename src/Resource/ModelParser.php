@@ -91,9 +91,10 @@ trait ModelParser
     /**
      * @param Record $record
      * @param string $hashKey
+     * @param bool $trash (false)
      * @return Record
      */
-    protected function previous(Record $record, string $hashKey): Record
+    protected function previous(Record $record, string $hashKey, bool $trash = false): Record
     {
         $primaryKey = $this->getPrimaryKey();
 
@@ -102,7 +103,7 @@ trait ModelParser
             $filter = [$primaryKey => $record->get($primaryKey)];
         }
 
-        $previous = $this->fields(null)->read($filter)->current();
+        $previous = $this->fields(null)->read($filter, null, $trash)->current();
         if (!$previous->isEmpty()) {
             $record->set($primaryKey, $previous->get($primaryKey));
             $record->set($hashKey, $previous->get($hashKey));
@@ -118,7 +119,7 @@ trait ModelParser
      */
     protected function getDestroyFilter(string $at, bool $trash = false): Filter
     {
-        $field = new Field($this->getCollection(), $at, Field::TYPE_DATETIME);
+        $field = new Field($this->getCollection(), $at, $this->getTimestampValue('at'));
 
         return Filter::create($field, null, Filter::RULE_BLANK, $trash);
     }

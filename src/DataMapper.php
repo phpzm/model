@@ -4,12 +4,12 @@ namespace Simples\Model;
 
 use Simples\Data\Collection;
 use Simples\Data\Error\SimplesResourceError;
+use Simples\Data\Error\SimplesValidationError;
 use Simples\Data\Record;
 use Simples\Helper\JSON;
+use Simples\Kernel\Wrapper;
 use Simples\Model\Error\SimplesActionError;
 use Simples\Model\Error\SimplesHookError;
-use Simples\Model\Resource\ModelParser;
-use Simples\Model\Resource\Timestamp;
 use Simples\Persistence\Field;
 use Simples\Persistence\Filter;
 
@@ -19,11 +19,6 @@ use Simples\Persistence\Filter;
  */
 class DataMapper extends ModelAbstract
 {
-    /**
-     * @trait Timestamp, ModelParser
-     */
-    use Timestamp, ModelParser;
-
     /**
      * Method with the responsibility of create a record of model
      * @param array|Record $record (null)
@@ -80,12 +75,12 @@ class DataMapper extends ModelAbstract
     /**
      * Read records with the filters informed
      * @param array|Record $record (null)
-     * @param bool $trash (false)
      * @param string $alias ('read')
+     * @param bool $trash (false)
      * @return Collection
      * @throws SimplesHookError
      */
-    final public function read($record = null, $trash = false, string $alias = null): Collection
+    final public function read($record = null, string $alias = null, $trash = false): Collection
     {
         $record = Record::parse(coalesce($record, []));
 
@@ -126,12 +121,13 @@ class DataMapper extends ModelAbstract
      * Update the record given
      * @param array|Record $record (null)
      * @param string $alias ('update')
+     * @param bool $trash (false)
      * @return Record
      * @throws SimplesActionError
      * @throws SimplesHookError
      * @throws SimplesResourceError
      */
-    final public function update($record = null, string $alias = null): Record
+    final public function update($record = null, string $alias = null, bool $trash = false): Record
     {
         $record = Record::parse($record);
 
@@ -142,7 +138,7 @@ class DataMapper extends ModelAbstract
 
         $action = coalesce($alias, Action::UPDATE);
 
-        $previous = $this->previous($record, $this->hashKey);
+        $previous = $this->previous($record, $this->hashKey, $trash);
 
         if ($previous->isEmpty()) {
             throw new SimplesResourceError([$this->getHashKey() => $record->get($this->getHashKey())]);
@@ -154,7 +150,7 @@ class DataMapper extends ModelAbstract
 
         $record->setPrivate($this->getHashKey());
 
-        $update = $this->configureRecord(Action::UPDATE, $record, $previous);
+        $update = $this->configureRecord(Action::UPDATE, $record, $previous, !$trash);
         $fields = $update->keys();
         $values = $update->values();
 
@@ -254,6 +250,26 @@ class DataMapper extends ModelAbstract
     }
 
     /**
+     * Recycle a destroyed record
+     * @param array|Record $record (null)
+     * @return Record
+     * @throws SimplesValidationError
+     */
+    final public function recycle($record = null): Record
+    {
+        if (!$this->destroyKeys) {
+            $details = ['destroyKeys' => 'requires'];
+            $message = "Recycle needs the `destroyKeys`";
+            throw new SimplesValidationError($details, $message);
+        }
+        $record = Record::parse($record);
+        foreach ($this->destroyKeys as $deletedKey) {
+            $record->set($deletedKey, __NULL__);
+        }
+        return $this->update($record, 'recycle', true);
+    }
+
+    /**
      * Get total of records based on filters
      * @param array|Record $record (null)
      * @return int
@@ -268,7 +284,7 @@ class DataMapper extends ModelAbstract
                 new Field($this->getCollection(), $this->getPrimaryKey(), Field::AGGREGATOR_COUNT, ['alias' => $alias])
             ])
             ->limit(null)
-            ->read($record, false, $alias)->current();
+            ->read($record, $alias, false)->current();
 
         $this->reset();
 
@@ -282,11 +298,16 @@ class DataMapper extends ModelAbstract
     /**
      * @param string $action
      * @param Record $record
-     * @param Record|null $previous
+     * @param Record $previous (null)
+     * @param bool $calculate (false)
      * @return Record
      */
-    private function configureRecord(string $action, Record $record, Record $previous = null): Record
-    {
+    private function configureRecord(
+        string $action,
+        Record $record,
+        Record $previous = null,
+        bool $calculate = true
+    ): Record {
         $values = Record::make([]);
         $fields = $this->getActionFields($action);
         foreach ($fields as $field) {
@@ -295,7 +316,7 @@ class DataMapper extends ModelAbstract
             if ($record->has($name)) {
                 $value = $record->get($name);
             }
-            if ($field->isCalculated()) {
+            if ($calculate && $field->isCalculated()) {
                 $immutable = $record;
                 if ($previous) {
                     $immutable = $previous;
@@ -304,6 +325,9 @@ class DataMapper extends ModelAbstract
                 $record->set($name, $value);
             }
             if (isset($value)) {
+                if ($value === __NULL__) {
+                    $value = null;
+                }
                 $values->set($name, $value);
                 unset($value);
             }

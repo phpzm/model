@@ -2,9 +2,12 @@
 
 namespace Simples\Model;
 
+use Simples\Data\Record;
 use Simples\Error\SimplesRunTimeError;
 use Simples\Kernel\Container;
+use Simples\Model\Resource\ModelParser;
 use Simples\Model\Resource\ModelTrigger;
+use Simples\Model\Resource\ModelTimestamp;
 use Simples\Persistence\Field;
 
 /**
@@ -14,9 +17,9 @@ use Simples\Persistence\Field;
 abstract class ModelAbstract extends ModelContract
 {
     /**
-     * @trait ModelTrigger
+     * @trait ModelTrigger, ModelParser, Timestamp
      */
-    use ModelTrigger;
+    use ModelTrigger, ModelParser, ModelTimestamp;
 
     /**
      * Connection id
@@ -122,6 +125,11 @@ abstract class ModelAbstract extends ModelContract
         $this->primaryKey = $primaryKey;
 
         $this->add($this->hashKey)->hashKey();
+        if ($this->destroyKeys) {
+            foreach ($this->destroyKeys as $key => $field) {
+                $this->add($field)->type($this->getTimestampType($key))->recover(false);
+            }
+        }
         $this->add($primaryKey)->primaryKey();
 
         return $this;
@@ -149,6 +157,20 @@ abstract class ModelAbstract extends ModelContract
         }
         return $this->connection;
     }
+
+    /**
+     * Recycle a destroyed record
+     * @param array|Record $record (null)
+     * @return Record
+     */
+    abstract public function recycle($record = null): Record;
+
+    /**
+     * Get total of records based on filters
+     * @param array|Record $record (null)
+     * @return int
+     */
+    abstract public function count($record = null): int;
 
     /**
      * @param string $name

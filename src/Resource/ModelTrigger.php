@@ -17,7 +17,7 @@ trait ModelTrigger
      * @param bool $strict
      * @return array
      */
-    private function filterFields(string $collection, string $method, bool $strict)
+    final public function filterFields(string $collection, string $method, bool $strict)
     {
         return array_filter($this->fields, function ($field) use ($collection, $method, $strict) {
             if ($strict && $field->getCollection() !== $collection) {
@@ -37,7 +37,7 @@ trait ModelTrigger
      * @param string $action
      * @param Record $record
      */
-    final protected function configureFields(string $action, Record $record)
+    final public function configureFields(string $action, Record $record)
     {
         foreach ($this->maps as $source => $target) {
             $record->set($target, $record->get($source));
@@ -55,7 +55,7 @@ trait ModelTrigger
      * @param Record $previous
      * @return bool
      */
-    final protected function before(string $action, Record $record, Record $previous = null): bool
+    final public function before(string $action, Record $record, Record $previous = null): bool
     {
         $action = ucfirst($action);
         $method = "before{$action}";
@@ -73,7 +73,7 @@ trait ModelTrigger
      * @param Record $record
      * @return bool
      */
-    final protected function after(string $action, Record $record): bool
+    final public function after(string $action, Record $record): bool
     {
         $action = ucfirst($action);
         $method = "after{$action}";
@@ -90,7 +90,7 @@ trait ModelTrigger
      * @param Record $record
      * @return array
      */
-    public function getDefaults(string $action, Record $record = null): array
+    final public function getDefaults(string $action, Record $record = null): array
     {
         $action = ucfirst($action);
         if (method_exists($this, "getDefaults{$action}")) {

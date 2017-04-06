@@ -7,8 +7,8 @@ use Simples\Data\Error\SimplesValidationError;
 use Simples\Data\Record;
 use Simples\Data\Validator;
 use Simples\Kernel\Container;
-use Simples\Model\ModelAbstract;
 use Simples\Model\Action;
+use Simples\Model\ModelAbstract;
 use Simples\Model\Repository\Resource\ValidationParser;
 
 /**

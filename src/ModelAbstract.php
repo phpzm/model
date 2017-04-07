@@ -13,6 +13,7 @@ use Simples\Persistence\Field;
 /**
  * Class AbstractModel
  * @package Simples\Model
+ * @codingStandardsIgnoreStart
  */
 abstract class ModelAbstract extends ModelContract
 {
@@ -91,17 +92,13 @@ abstract class ModelAbstract extends ModelContract
     ];
 
     /**
+     * @codingStandardsIgnoreEnd
      * AbstractModel constructor to configure a new instance
      * @param string $connection (null)
      */
     public function __construct($connection = null)
     {
         parent::__construct($this->connection($connection));
-        /*
-        foreach (array_merge($this->createKeys, $this->updateKeys, $this->destroyKeys) as $type => $name) {
-            $this->addField($name, $type === 'at' ? Field::TYPE_DATETIME : Field::TYPE_STRING);
-        }
-        */
     }
 
     /**
@@ -126,8 +123,18 @@ abstract class ModelAbstract extends ModelContract
 
         $this->add($this->hashKey)->hashKey();
         if ($this->destroyKeys) {
-            foreach ($this->destroyKeys as $key => $field) {
-                $this->add($field)->type($this->getTimestampType($key))->recover(false);
+            foreach ($this->destroyKeys as $key => $name) {
+                $this->add($name)->type($this->getTimestampType($key))->recover(false);
+            }
+        }
+        if ($this->createKeys) {
+            foreach ($this->createKeys as $key => $name) {
+                $this->add($name)->type($this->getTimestampType($key))->recover(false);
+            }
+        }
+        if ($this->updateKeys) {
+            foreach ($this->updateKeys as $key => $name) {
+                $this->add($name)->type($this->getTimestampType($key))->recover(false);
             }
         }
         $this->add($primaryKey)->primaryKey();
@@ -150,11 +157,7 @@ abstract class ModelAbstract extends ModelContract
      */
     private function connection($connection): string
     {
-        if (!is_null($connection)) {
-            $this->connection = $connection;
-        } elseif (is_null($this->connection)) {
-            $this->connection = env('DEFAULT_DATABASE');
-        }
+        $this->connection = !is_null($connection) ? $connection : env('DEFAULT_DATABASE');
         return $this->connection;
     }
 

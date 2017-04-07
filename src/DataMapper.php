@@ -6,8 +6,6 @@ use Simples\Data\Collection;
 use Simples\Data\Error\SimplesResourceError;
 use Simples\Data\Error\SimplesValidationError;
 use Simples\Data\Record;
-use Simples\Helper\JSON;
-use Simples\Kernel\Wrapper;
 use Simples\Model\Error\SimplesActionError;
 use Simples\Model\Error\SimplesHookError;
 use Simples\Persistence\Field;
@@ -295,46 +293,6 @@ class DataMapper extends ModelAbstract
         return (int)$count->get($alias);
     }
 
-    /**
-     * @param string $action
-     * @param Record $record
-     * @param Record $previous (null)
-     * @param bool $calculate (false)
-     * @return Record
-     */
-    private function configureRecord(
-        string $action,
-        Record $record,
-        Record $previous = null,
-        bool $calculate = true
-    ): Record {
-        $values = Record::make([]);
-        $fields = $this->getActionFields($action);
-        foreach ($fields as $field) {
-            /** @var Field $field */
-            $name = $field->getName();
-            if ($record->has($name)) {
-                $value = $record->get($name);
-            }
-            if ($calculate && $field->isCalculated()) {
-                $immutable = $record;
-                if ($previous) {
-                    $immutable = $previous;
-                }
-                $value = $field->calculate($immutable);
-                $record->set($name, $value);
-            }
-            if (isset($value)) {
-                if ($value === __NULL__) {
-                    $value = null;
-                }
-                $values->set($name, $value);
-                unset($value);
-            }
-        }
-        return $values;
-    }
-
     /**;
      *
      * @param string $action
@@ -354,36 +312,5 @@ class DataMapper extends ModelAbstract
             $fields = $this->getFields($action, $strict);
         }
         return $fields;
-    }
-
-    /**
-     * @param int $options
-     * @return string
-     */
-    public function getJSON(int $options = 0)
-    {
-        $fields = [];
-        /** @var Field $field */
-        foreach ($this->fields as $field) {
-            $fields[] = [
-                'field' => $field->getName(),
-                'type' => $field->getType(),
-                'label' => $field->option('label'),
-                'grid' => true,
-                'form' => ['create', 'show', 'edit'],
-                'search' => true,
-                'grids' => [
-                    'width' => ''
-                ],
-                'forms' => [
-                    'component' => '',
-                    'width' => '',
-                    'disabled' => false,
-                    'order' => 0
-                ]
-            ];
-        }
-
-        return JSON::encode($fields, $options);
     }
 }

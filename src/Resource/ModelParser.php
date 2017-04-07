@@ -4,6 +4,7 @@ namespace Simples\Model\Resource;
 
 use Exception;
 use Simples\Data\Record;
+use Simples\Helper\JSON;
 use Simples\Kernel\Container;
 use Simples\Model\DataMapper;
 use Simples\Persistence\Field;
@@ -122,5 +123,95 @@ trait ModelParser
         $field = new Field($this->getCollection(), $at, $this->getTimestampValue('at'));
 
         return Filter::create($field, null, Filter::RULE_BLANK, $trash);
+    }
+
+    /**
+     * @param string $action
+     * @param Record $record
+     * @param Record $previous (null)
+     * @param bool $calculate (false)
+     * @return Record
+     */
+    public function configureRecord(
+        string $action,
+        Record $record,
+        Record $previous = null,
+        bool $calculate = true
+    ): Record {
+        $values = Record::make([]);
+        $fields = $this->getActionFields($action);
+        foreach ($fields as $field) {
+            /** @var Field $field */
+            $name = $field->getName();
+            if ($record->has($name)) {
+                $value = $record->get($name);
+            }
+            if ($calculate && $field->isCalculated()) {
+                $record->set($name, $this->resolveCalculated($field, $record, $previous));
+            }
+            if (isset($value)) {
+                $values->set($name, $this->resolveValue($value));
+                unset($value);
+            }
+        }
+        return $values;
+    }
+
+    /**
+     * @param Field $field
+     * @param Record $record
+     * @param Record $previous (null)
+     * @return mixed
+     */
+    protected function resolveCalculated(Field $field, Record $record, Record $previous = null)
+    {
+        $immutable = $record;
+        if ($previous) {
+            $immutable = $previous;
+        }
+        return $field->calculate($immutable);
+    }
+
+    /**
+     * @param mixed $value
+     * @return mixed
+     */
+    protected function resolveValue($value)
+    {
+        if ($value === __NULL__) {
+            $value = null;
+        }
+        return $value;
+    }
+
+    /**
+     * @param int $options
+     * @return string
+     */
+    public function getJSON(int $options = 0)
+    {
+        $fields = [];
+        /** @var Field $field */
+        foreach ($this->fields as $field) {
+            $fields[] = [
+                'field' => $field->getName(),
+                'type' => $field->getType(),
+                'label' => $field->option('label'),
+                'grid' => true,
+                'form' => ['create', 'show', 'edit'],
+                'search' => true,
+                'grids' => [
+                    'width' => ''
+                ],
+                'forms' => [
+                    'component' => '',
+                    'width' => '',
+                    'disabled' => false,
+                    'order' => 0
+                ]
+            ];
+        }
+
+        return JSON::encode($fields, $options);
     }
 }

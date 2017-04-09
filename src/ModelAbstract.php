@@ -122,18 +122,8 @@ abstract class ModelAbstract extends ModelContract
         $this->primaryKey = $primaryKey;
 
         $this->add($this->hashKey)->hashKey();
-        if ($this->destroyKeys) {
-            foreach ($this->destroyKeys as $key => $name) {
-                $this->add($name)->type($this->getTimestampType($key))->recover(false);
-            }
-        }
-        if ($this->createKeys) {
-            foreach ($this->createKeys as $key => $name) {
-                $this->add($name)->type($this->getTimestampType($key))->recover(false);
-            }
-        }
-        if ($this->updateKeys) {
-            foreach ($this->updateKeys as $key => $name) {
+        foreach ([$this->destroyKeys, $this->createKeys, $this->updateKeys] as $keys) {
+            foreach ($keys as $key => $name) {
                 $this->add($name)->type($this->getTimestampType($key))->recover(false);
             }
         }

@@ -104,7 +104,8 @@ trait ModelParser
             $filter = [$primaryKey => $record->get($primaryKey)];
         }
 
-        $previous = $this->fields(null)->read($filter, null, $trash)->current();
+        $read = $this->fields(null)->read($filter, null, $trash)->current();
+        $previous = Record::make($read->all(), false);
         if (!$previous->isEmpty()) {
             $record->set($primaryKey, $previous->get($primaryKey));
             $record->set($hashKey, $previous->get($hashKey));
@@ -139,15 +140,22 @@ trait ModelParser
         bool $calculate = true
     ): Record {
         $values = Record::make([]);
+        $avoid = $this->getAvoid();
         $fields = $this->getActionFields($action);
         foreach ($fields as $field) {
             /** @var Field $field */
             $name = $field->getName();
+            if (in_array($name, $avoid)) {
+                continue;
+            }
             if ($record->has($name)) {
                 $value = $record->get($name);
             }
             if ($calculate && $field->isCalculated()) {
-                $record->set($name, $this->resolveCalculated($field, $record, $previous));
+                $value = $this->resolveCalculated($field, $record, $previous);
+            }
+            if ($calculate && $field->isMutable()) {
+                $value = $this->resolveMutation($field, $record);
             }
             if (isset($value)) {
                 $values->set($name, $this->resolveValue($value));
@@ -173,6 +181,17 @@ trait ModelParser
     }
 
     /**
+     * @param Field $field
+     * @param Record $record
+     * @return mixed
+     */
+    protected function resolveMutation(Field $field, Record $record)
+    {
+        $callable = $field->option('mutator');
+        return $callable($record->get($field->getName()));
+    }
+
+    /**
      * @param mixed $value
      * @return mixed
      */
@@ -182,6 +201,20 @@ trait ModelParser
             $value = null;
         }
         return $value;
+    }
+
+    /**
+     * @return array
+     */
+    protected function getAvoid(): array
+    {
+        $avoid = [];
+        foreach ([$this->destroyKeys, $this->createKeys, $this->updateKeys] as $keys) {
+            foreach ($keys as $name) {
+                $avoid[] = $name;
+            }
+        }
+        return $avoid;
     }
 
     /**

@@ -269,11 +269,11 @@ class DataMapper extends ModelAbstract
 
     /**
      * Get total of records based on filters
-     * @param array|Record $record (null)
+     * @param Record $record
      * @return int
      * @throws SimplesActionError
      */
-    final public function count($record = null): int
+    final public function count(Record $record): int
     {
         // Record
         $alias = 'count';

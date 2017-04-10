@@ -5,6 +5,7 @@ namespace Simples\Model;
 use Simples\Data\Record;
 use Simples\Error\SimplesRunTimeError;
 use Simples\Kernel\Container;
+use Simples\Model\Resource\ModelAggregation;
 use Simples\Model\Resource\ModelParser;
 use Simples\Model\Resource\ModelTrigger;
 use Simples\Model\Resource\ModelTimestamp;
@@ -18,9 +19,9 @@ use Simples\Persistence\Field;
 abstract class ModelAbstract extends ModelContract
 {
     /**
-     * @trait ModelTrigger, ModelParser, Timestamp
+     * @trait ModelTrigger, ModelParser, ModelTimestamp, ModelAggregation
      */
-    use ModelTrigger, ModelParser, ModelTimestamp;
+    use ModelTrigger, ModelParser, ModelTimestamp, ModelAggregation;
 
     /**
      * Connection id
@@ -160,10 +161,10 @@ abstract class ModelAbstract extends ModelContract
 
     /**
      * Get total of records based on filters
-     * @param array|Record $record (null)
+     * @param Record $record
      * @return int
      */
-    abstract public function count($record = null): int;
+    abstract public function count(Record $record): int;
 
     /**
      * @param string $name

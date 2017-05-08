@@ -6,10 +6,10 @@ use Simples\Data\Record;
 use Simples\Kernel\Container;
 
 /**
- * Class ModelTrigger
- * @package Simples\Model\Resources
+ * Class ModelHook
+ * @package Simples\Model\Resource
  */
-trait ModelTrigger
+trait ModelHook
 {
     /**
      * @param string $collection

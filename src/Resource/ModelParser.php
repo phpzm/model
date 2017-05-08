@@ -238,6 +238,12 @@ trait ModelParser
                 ],
                 'forms' => [
                     'component' => '',
+                    'options' => array_map(function ($value) {
+                        return [
+                            'label' => '',
+                            'value' => $value
+                        ];
+                    }, $field->getEnum()),
                     'width' => '',
                     'disabled' => false,
                     'order' => 0

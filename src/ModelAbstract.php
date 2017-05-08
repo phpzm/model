@@ -7,7 +7,7 @@ use Simples\Error\SimplesRunTimeError;
 use Simples\Kernel\Container;
 use Simples\Model\Resource\ModelAggregation;
 use Simples\Model\Resource\ModelParser;
-use Simples\Model\Resource\ModelTrigger;
+use Simples\Model\Resource\ModelHook;
 use Simples\Model\Resource\ModelTimestamp;
 use Simples\Persistence\Field;
 
@@ -19,9 +19,9 @@ use Simples\Persistence\Field;
 abstract class ModelAbstract extends ModelContract
 {
     /**
-     * @trait ModelTrigger, ModelParser, ModelTimestamp, ModelAggregation
+     * @trait ModelHook, ModelParser, ModelTimestamp, ModelAggregation
      */
-    use ModelTrigger, ModelParser, ModelTimestamp, ModelAggregation;
+    use ModelHook, ModelParser, ModelTimestamp, ModelAggregation;
 
     /**
      * Connection id

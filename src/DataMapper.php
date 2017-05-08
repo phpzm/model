@@ -63,6 +63,7 @@ class DataMapper extends ModelAbstract
         if ($this->getPrimaryKey()) {
             $record->set($this->getPrimaryKey(), $created);
         }
+        $record->merge($create->all());
 
         if (!$this->after($action, $record)) {
             throw new SimplesHookError(get_class($this), $action, 'after');
@@ -275,14 +276,20 @@ class DataMapper extends ModelAbstract
      */
     final public function count(Record $record): int
     {
-        // Record
         $alias = 'count';
+        $collection = $this->getCollection();
+        $name = $this->getPrimaryKey();
+        $type = Field::AGGREGATOR_COUNT;
+        $options = ['alias' => $alias];
+        $fields = [Field::make($collection, $name, $type, $options)];
+
+        $this->reset();
+
         $count = $this
-            ->fields([
-                new Field($this->getCollection(), $this->getPrimaryKey(), Field::AGGREGATOR_COUNT, ['alias' => $alias])
-            ])
+            ->fields($fields)
             ->limit(null)
-            ->read($record, $alias, false)->current();
+            ->read($record, $alias, false)
+            ->current();
 
         $this->reset();
 

@@ -230,9 +230,9 @@ trait ModelParser
                 'field' => $field->getName(),
                 'type' => $field->getType(),
                 'label' => $field->option('label'),
-                'grid' => true,
+                'grid' => false,
                 'form' => ['create', 'show', 'edit'],
-                'search' => true,
+                'search' => false,
                 'grids' => [
                     'width' => ''
                 ],

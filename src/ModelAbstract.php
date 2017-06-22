@@ -290,6 +290,14 @@ abstract class ModelAbstract extends ModelContract
     /**
      * @return string
      */
+    final public function getConnection(): string
+    {
+        return $this->connection;
+    }
+
+    /**
+     * @return string
+     */
     final public function getPrimaryKey(): string
     {
         return $this->primaryKey;

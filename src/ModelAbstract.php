@@ -6,8 +6,8 @@ use Simples\Data\Record;
 use Simples\Error\SimplesRunTimeError;
 use Simples\Kernel\Container;
 use Simples\Model\Resource\ModelAggregation;
-use Simples\Model\Resource\ModelParser;
 use Simples\Model\Resource\ModelHook;
+use Simples\Model\Resource\ModelParser;
 use Simples\Model\Resource\ModelTimestamp;
 use Simples\Persistence\Field;
 
@@ -145,10 +145,16 @@ abstract class ModelAbstract extends ModelContract
      * Parse the connection name and choose a source to it
      * @param $connection
      * @return string
+     * @throws SimplesRunTimeError
      */
     private function connection($connection): string
     {
         $this->connection = !is_null($connection) ? $connection : env('DEFAULT_DATABASE');
+        if (!$this->connection) {
+            throw new SimplesRunTimeError(
+                "There is no `connection` to be used. Check .env file or configure the model property"
+            );
+        }
         return $this->connection;
     }
 
@@ -285,14 +291,6 @@ abstract class ModelAbstract extends ModelContract
     final public function getCollection(): string
     {
         return $this->collection;
-    }
-
-    /**
-     * @return string
-     */
-    final public function getConnection(): string
-    {
-        return $this->connection;
     }
 
     /**

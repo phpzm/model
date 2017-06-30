@@ -257,14 +257,17 @@ class DataMapper extends ModelAbstract
     final public function recycle($record = null): Record
     {
         if (!$this->destroyKeys) {
-            $details = ['destroyKeys' => 'requires'];
-            $message = "Recycle needs the `destroyKeys`";
-            throw new SimplesValidationError($details, $message);
+            throw new SimplesValidationError(
+                ['destroyKeys' => 'requires'],
+                "Recycle needs the `destroyKeys`"
+            );
         }
+
         $record = Record::parse($record);
         foreach ($this->destroyKeys as $deletedKey) {
             $record->set($deletedKey, __NULL__);
         }
+
         return $this->update($record, 'recycle', true);
     }
 

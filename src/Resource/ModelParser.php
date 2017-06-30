@@ -139,15 +139,17 @@ trait ModelParser
         Record $previous = null,
         bool $calculate = true
     ): Record {
+        // $avoid = $this->getAvoid();
         $values = Record::make([]);
-        $avoid = $this->getAvoid();
         $fields = $this->getActionFields($action);
         foreach ($fields as $field) {
             /** @var Field $field */
             $name = $field->getName();
+            /*
             if (in_array($name, $avoid)) {
                 continue;
             }
+             */
             if ($record->has($name)) {
                 $value = $record->get($name);
             }

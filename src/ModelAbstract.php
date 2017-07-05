@@ -93,6 +93,12 @@ abstract class ModelAbstract extends ModelContract
     ];
 
     /**
+     * Field registered in Auth with the user logged in
+     * @var string
+     */
+    protected $by = 'user';
+
+    /**
      * @codingStandardsIgnoreEnd
      * AbstractModel constructor to configure a new instance
      * @param string $connection (null)

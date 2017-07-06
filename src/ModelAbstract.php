@@ -99,6 +99,12 @@ abstract class ModelAbstract extends ModelContract
     protected $by = 'user';
 
     /**
+     * Value to anonymous access
+     * @var string
+     */
+    protected $anonymous = 'anonymous';
+
+    /**
      * @codingStandardsIgnoreEnd
      * AbstractModel constructor to configure a new instance
      * @param string $connection (null)

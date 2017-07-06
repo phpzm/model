@@ -40,7 +40,7 @@ trait ModelTimestamp
                 return Date::now();
                 break;
             case 'by':
-                return Auth::get($this->by);
+                return Auth::get($this->by, $this->anonymous);
                 break;
         }
         return null;

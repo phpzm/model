@@ -99,7 +99,7 @@ abstract class ModelAbstract extends ModelContract
     protected $by = 'user';
 
     /**
-     * Value to be used with unknown user access
+     * Value to be used with unknown access
      * @var string
      */
     protected $visitor = 'visitor';

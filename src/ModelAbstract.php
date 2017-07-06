@@ -99,10 +99,10 @@ abstract class ModelAbstract extends ModelContract
     protected $by = 'user';
 
     /**
-     * Value to anonymous access
+     * Value to be used with unknown user access
      * @var string
      */
-    protected $anonymous = 'anonymous';
+    protected $visitor = 'visitor';
 
     /**
      * @codingStandardsIgnoreEnd

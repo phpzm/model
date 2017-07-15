@@ -3,10 +3,13 @@
 namespace Simples\Model\Resource;
 
 use Exception;
+use Simples\Data\Error\SimplesResourceError;
 use Simples\Data\Record;
+use Simples\Error\SimplesRunTimeError;
 use Simples\Helper\JSON;
 use Simples\Kernel\Container;
 use Simples\Model\DataMapper;
+use Simples\Persistence\Error\SimplesPersistenceError;
 use Simples\Persistence\Field;
 use Simples\Persistence\Filter;
 use Simples\Persistence\Fusion;
@@ -22,14 +25,18 @@ trait ModelParser
      * @return array
      * @throws Exception
      */
-    protected function parseFilterFields(array $data): array
+    protected function parseFilterFields(array $data = []): array
     {
         $filters = [];
         foreach ($data as $name => $value) {
-            if (!$this->has($name)) {
+            if (is_array($value) && isset($value['filter'])) {
                 $value['filter'] = $this->parseFilterFields($value['filter']);
                 $filters[] = $value;
                 continue;
+            }
+            if (!$this->has($name)) {
+                $class = static::class;
+                throw new SimplesRunTimeError("There is no property `{$name}` in `{$class}`");
             }
             $filters[] = Filter::create($this->get($name), $value);
         }
@@ -40,7 +47,7 @@ trait ModelParser
      * @param array $filters
      * @return array
      */
-    protected function parseFilterValues(array $filters): array
+    protected function parseFilterValues(array $filters = []): array
     {
         $values = [];
         foreach ($filters as $filter) {
@@ -63,7 +70,7 @@ trait ModelParser
      * @param array $fields
      * @return array
      */
-    protected function parseReadRelations(array $fields): array
+    protected function parseReadRelations(array $fields = []): array
     {
         $join = [];
         /** @var DataMapper $parent */

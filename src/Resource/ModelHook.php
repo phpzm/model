@@ -4,6 +4,7 @@ namespace Simples\Model\Resource;
 
 use Simples\Data\Record;
 use Simples\Kernel\Container;
+use Simples\Persistence\Field;
 
 /**
  * Class ModelHook
@@ -75,6 +76,8 @@ trait ModelHook
      */
     final public function after(string $action, Record $record): bool
     {
+        $this->afterDefault($action, $record);
+
         $action = ucfirst($action);
         $method = "after{$action}";
         if (method_exists($this, $method)) {
@@ -97,5 +100,35 @@ trait ModelHook
             return call_user_func_array([$this, "getDefaults{$action}"], [$record]);
         }
         return [];
+    }
+
+    /**
+     * @param string $action
+     * @param Record $record
+     */
+    private function afterDefault(string $action, Record $record)
+    {
+        $fields = $this->getFields($action);
+        foreach ($fields as $field) {
+            /** @var Field $field */
+            $this->resolveReferenced($record, $field->getReferenced());
+        }
+    }
+
+    /**
+     * @param Record $record
+     * @param array $referenced
+     */
+    private function resolveReferenced(Record $record, array $referenced)
+    {
+        foreach ($referenced as $item) {
+            if (!$item['pivot']) {
+                continue;
+            }
+            if (!$record->has($item['name'])) {
+                continue;
+            }
+            // TODO: resolve relationship
+        }
     }
 }

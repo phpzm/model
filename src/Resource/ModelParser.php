@@ -21,6 +21,8 @@ use Simples\Persistence\Fusion;
 trait ModelParser
 {
     /**
+     * Parse the filters of fields
+     *
      * @param array $data
      * @return array
      * @throws Exception
@@ -44,6 +46,8 @@ trait ModelParser
     }
 
     /**
+     * Parse the values of the fields
+     *
      * @param array $filters
      * @return array
      */

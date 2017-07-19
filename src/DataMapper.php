@@ -18,7 +18,7 @@ use Simples\Persistence\Filter;
 abstract class DataMapper extends ModelAbstract
 {
     /**
-     * DataMapper constructor.
+     * DataMapper constructor
      */
     public function __construct()
     {

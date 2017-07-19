@@ -15,8 +15,24 @@ use Simples\Persistence\Filter;
  * Class DataMapper
  * @package Simples\Model
  */
-class DataMapper extends ModelAbstract
+abstract class DataMapper extends ModelAbstract
 {
+    /**
+     * DataMapper constructor.
+     */
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->construct();
+    }
+
+    /**
+     *  Model constructor
+     * @return void
+     */
+    abstract public function construct();
+
     /**
      * Method with the responsibility of create a record of model
      * @param array|Record $record (null)

@@ -117,13 +117,21 @@ abstract class ModelAbstract extends ModelContract
     /**
      * Configure the instance with reference properties
      * @param string $collection
-     * @param string $primaryKey
-     * @param string $relationship
+     * @param string $primaryKey ('id')
+     * @param string $relationship ('')
      * @return $this
      * @throws SimplesRunTimeError
      */
-    protected function configure(string $collection, string $primaryKey, string $relationship = '')
+    protected function configure(string $collection, string $primaryKey = 'id', string $relationship = '')
     {
+        if ($relationship) {
+            $reference = get_parent_class($this);
+            $call = 'construct';
+            if (method_exists($reference, $call)) {
+                $reference::$call();
+            }
+        }
+
         if ($this->collection) {
             $this->parents[$relationship] = clone $this;
             $this->add($relationship)->integer()->collection($collection)->update(false);

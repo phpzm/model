@@ -3,13 +3,11 @@
 namespace Simples\Model\Resource;
 
 use Exception;
-use Simples\Data\Error\SimplesResourceError;
 use Simples\Data\Record;
 use Simples\Error\SimplesRunTimeError;
 use Simples\Helper\JSON;
 use Simples\Kernel\Container;
 use Simples\Model\DataMapper;
-use Simples\Persistence\Error\SimplesPersistenceError;
 use Simples\Persistence\Field;
 use Simples\Persistence\Filter;
 use Simples\Persistence\Fusion;

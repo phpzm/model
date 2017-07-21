@@ -42,6 +42,12 @@ abstract class ModelAbstract extends ModelContract
     private $parents = [];
 
     /**
+     * Collections parents created by extends
+     * @var array
+     */
+    private $relationships = [];
+
+    /**
      * Fields of model
      * @var array
      */
@@ -237,6 +243,24 @@ abstract class ModelAbstract extends ModelContract
 
     /**
      * @param string $name
+     * @param string $relationship
+     * @param string $target
+     * @param string $local (null)
+     */
+    protected function pivot(string $name, string $relationship, string $target, string $local = null)
+    {
+        $this->add($name)->array()->readonly();
+        $this->relationships[] = [
+            'type' => 'pivot',
+            'local' => $local ? $local : $this->getPrimaryKey(),
+            'source' => $name,
+            'relationship' => $relationship,
+            'target' => $target,
+        ];
+    }
+
+    /**
+     * @param string $name
      * @return Field
      */
     final public function get(string $name): Field
@@ -270,21 +294,13 @@ abstract class ModelAbstract extends ModelContract
      */
     final public function getFields(string $action = '', bool $strict = true): array
     {
-        $method = '';
-        switch ($action) {
-            case Action::CREATE:
-                $method = 'isCreate';
-                break;
-            case Action::READ:
-                $method = 'isRead';
-                break;
-            case Action::UPDATE:
-                $method = 'isUpdate';
-                break;
-            case Action::RECOVER:
-                $method = 'isRecover';
-                break;
-        }
+        $methods = [
+            Action::CREATE => 'isCreate',
+            Action::READ => 'isRead',
+            Action::UPDATE => 'isUpdate',
+            Action::RECOVER => 'isRecover',
+        ];
+        $method = off($methods, $action, '');
 
         return $this->filterFields($this->getCollection(), $method, $strict);
     }
@@ -311,6 +327,14 @@ abstract class ModelAbstract extends ModelContract
     final public function getCollection(): string
     {
         return $this->collection;
+    }
+
+    /**
+     * @return array
+     */
+    final public function getRelationships(): array
+    {
+        return $this->relationships;
     }
 
     /**

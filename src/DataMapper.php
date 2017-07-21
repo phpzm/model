@@ -92,10 +92,11 @@ abstract class DataMapper extends ModelAbstract
      * @param array|Record $record (null)
      * @param string $alias ('read')
      * @param bool $trash (false)
+     * @param bool $clean (false)
      * @return Collection
      * @throws SimplesHookError
      */
-    final public function read($record = null, string $alias = null, $trash = false): Collection
+    final public function read($record = null, string $alias = null, $trash = false, $clean = false): Collection
     {
         $record = Record::parse(coalesce($record, []));
 
@@ -116,20 +117,26 @@ abstract class DataMapper extends ModelAbstract
             $filters[] = $this->getDestroyFilter($this->destroyKeys['at'], $trash);
         }
 
+        $fields = $this->getActionFields(Action::READ, false);
+        if ($clean) {
+            $fields = $this->clear($fields);
+        }
         $array = $this
             ->source($this->getCollection())
             ->relation($this->parseReadRelations($this->fields))
-            ->fields($this->getActionFields(Action::READ, false))
+            ->fields($fields)
             ->where($filters)// TODO: needs review
             ->recover($values);
 
         $this->reset();
 
-        $record = Record::make($array);
-        if (!$this->after($action, $record)) {
+        $after = $this->after($action, $record, $array);
+        if (!is_array($after)) {
             throw new SimplesHookError(get_class($this), $action, 'after');
         }
-        return Collection::make($record->all());
+        $array = $after;
+
+        return Collection::make($array);
     }
 
     /**
@@ -336,6 +343,20 @@ abstract class DataMapper extends ModelAbstract
         }
         if (!isset($fields)) {
             $fields = $this->getFields($action, $strict);
+        }
+        return $fields;
+    }
+
+    /**
+     * @param array $fields
+     * @return array
+     */
+    private function clear(array $fields): array
+    {
+        foreach ([$this->destroyKeys, $this->createKeys, $this->updateKeys] as $keys) {
+            foreach ($keys as $name) {
+                unset($fields[$name]);
+            }
         }
         return $fields;
     }

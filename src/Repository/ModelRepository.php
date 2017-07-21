@@ -33,6 +33,11 @@ class ModelRepository
     private $validator;
 
     /**
+     * @var bool
+     */
+    private $clean;
+
+    /**
      * ApiRepository constructor.
      * @param ModelAbstract $model
      * @param Validator|null $validator
@@ -89,7 +94,10 @@ class ModelRepository
 
         $action = coalesce($action, Action::READ);
 
-        return $this->model->read($record, $action, $trash);
+        $clean = $this->clean;
+        $this->clean = false;
+
+        return $this->model->read($record, $action, $trash, $clean);
     }
 
     /**
@@ -256,6 +264,16 @@ class ModelRepository
     public function log($logging = true): ModelRepository
     {
         $this->model->log($logging);
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function clean()
+    {
+        $this->clean = true;
+
         return $this;
     }
 }

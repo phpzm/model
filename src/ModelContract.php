@@ -25,9 +25,10 @@ abstract class ModelContract extends Engine
      * @param array|Record $record (null)
      * @param string $alias (null)
      * @param bool $trash (false)
+     * @param bool $clean (false)
      * @return Collection
      */
-    abstract public function read($record = null, string $alias = null, $trash = false): Collection;
+    abstract public function read($record = null, string $alias = null, $trash = false, $clean = false): Collection;
 
     /**
      * Update the record given

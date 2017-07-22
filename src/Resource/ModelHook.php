@@ -77,8 +77,9 @@ trait ModelHook
     {
         $action = ucfirst($action);
         $method = "before{$action}";
-        if (method_exists($this, $method)) {
-            return !!Container::instance()->execute($this, $method, ['record' => $record, 'previous' => $previous]);
+        $container = Container::instance();
+        if ($container->exists($this, $method)) {
+            return $container->invoke($this, $method, ['record' => $record, 'previous' => $previous]);
         }
         return true;
     }
@@ -98,8 +99,9 @@ trait ModelHook
 
         $name = ucfirst($action);
         $method = "after{$name}";
-        if (method_exists($this, $method)) {
-            return Container::instance()->execute($this, $method, ['record' => $record, 'data' => $data]);
+        $container = Container::instance();
+        if ($container->exists($this, $method)) {
+            return $container->invoke($this, $method, ['record' => $record, 'data' => $data]);
         }
 
         if ($action === Action::READ) {
@@ -119,10 +121,10 @@ trait ModelHook
     {
         $action = ucfirst($action);
         $method = "afterDefault{$action}";
-        if (method_exists($this, $method)) {
-            return call_user_func_array([$this, $method], [$record, $data]);
+        if (!method_exists($this, $method)) {
+            return $data;
         }
-        return $data;
+        return call_user_func_array([$this, $method], [$record, $data]);
     }
 
     /**

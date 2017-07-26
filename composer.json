@@ -10,7 +10,7 @@
   ],
   "homepage": "https://github.com/phpzm/model",
   "license": "MIT",
-  "version": "1.11.3",
+  "version": "1.11.4",
   "type": "package",
   "authors": [
     {
@@ -24,11 +24,11 @@
   ],
   "require": {
     "php": ">=7.0",
-    "phpzm/data": "^1.8.5",
-    "phpzm/helper": "^1.5.12",
-    "phpzm/kernel": "^1.8.2",
-    "phpzm/persistence": "^1.11.2",
-    "phpzm/security": "^1.4.12"
+    "phpzm/data": "^1.8.6",
+    "phpzm/helper": "^1.5.13",
+    "phpzm/kernel": "^1.8.3",
+    "phpzm/persistence": "^1.11.3",
+    "phpzm/security": "^1.4.13"
   },
   "autoload": {
     "psr-4": {

@@ -9,6 +9,7 @@ use Simples\Model\Resource\ModelAggregation;
 use Simples\Model\Resource\ModelHook;
 use Simples\Model\Resource\ModelParser;
 use Simples\Model\Resource\ModelTimestamp;
+use Simples\Model\Resource\ModelPivot;
 use Simples\Persistence\Field;
 
 /**
@@ -19,9 +20,9 @@ use Simples\Persistence\Field;
 abstract class ModelAbstract extends ModelContract
 {
     /**
-     * @trait ModelHook, ModelParser, ModelTimestamp, ModelAggregation
+     * @trait ModelHook, ModelParser, ModelTimestamp, ModelAggregation, ModelPivot
      */
-    use ModelHook, ModelParser, ModelTimestamp, ModelAggregation;
+    use ModelHook, ModelParser, ModelTimestamp, ModelAggregation, ModelPivot;
 
     /**
      * Connection id
@@ -245,12 +246,19 @@ abstract class ModelAbstract extends ModelContract
      * @param string $name
      * @param string $relationship
      * @param string $target
+     * @param array $operations (['*'])
      * @param string $local (null)
      */
-    protected function pivot(string $name, string $relationship, string $target, string $local = null)
-    {
+    protected function pivot(
+        string $name,
+        string $relationship,
+        string $target,
+        array $operations = ['*'],
+        string $local = null
+    ) {
         $this->add($name)->array()->readonly();
         $this->relationships[] = [
+            'operations' => $operations,
             'type' => 'pivot',
             'local' => $local ? $local : $this->getPrimaryKey(),
             'source' => $name,

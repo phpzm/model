@@ -2,11 +2,12 @@
 
 namespace Simples\Model\Resource;
 
-use function count;
 use Simples\Data\Record;
 use Simples\Kernel\Container;
 use Simples\Model\Action;
 use Simples\Model\ModelAbstract;
+use function count;
+use function is_array;
 
 /**
  * Trait Pivot
@@ -23,7 +24,7 @@ trait ModelPivot
     final protected function pivotSolver(string $action, Record $record, array $data = [])
     {
         if (in_array($action, [Action::CREATE, Action::UPDATE])) {
-            $this->saveRelationships($record);
+            $this->saveRelationships($action, $record);
             return null;
         }
 
@@ -38,16 +39,27 @@ trait ModelPivot
     }
 
     /**
+     * @param string $action
      * @param Record $record
      * @return void
      */
-    final protected function saveRelationships(Record $record)
+    final protected function saveRelationships(string $action, Record $record)
     {
         if (!count($this->relationships)) {
             return null;
         }
 
         foreach ($this->relationships as $relationship) {
+            $operations = $relationship['operations'];
+            if (!is_array($operations)) {
+                $operations = [$operations];
+            }
+            if (!count($operations)) {
+                continue;
+            }
+            if (!in_array($action, $operations) && !in_array('*', $operations)) {
+                continue;
+            }
             if ($relationship['type'] === 'pivot') {
                 $this->pivotSynchronize(
                     $record,
@@ -70,6 +82,16 @@ trait ModelPivot
             return $data;
         }
         foreach ($this->relationships as $relationship) {
+            $operations = $relationship['operations'];
+            if (!is_array($operations)) {
+                $operations = [$operations];
+            }
+            if (!count($operations)) {
+                continue;
+            }
+            if (!in_array('read', $operations) && !in_array('*', $operations)) {
+                continue;
+            }
             if ($relationship['type'] === 'pivot') {
                 $data = $this->pivotRecover(
                     $data, $relationship['local'], $relationship['relationship'], $relationship['source']

@@ -6,6 +6,7 @@ use Simples\Data\Collection;
 use Simples\Data\Error\SimplesValidationError;
 use Simples\Data\Record;
 use Simples\Data\Validator;
+use Simples\Error\SimplesRunTimeError;
 use Simples\Kernel\Container;
 use Simples\Model\Action;
 use Simples\Model\ModelAbstract;
@@ -51,6 +52,7 @@ class ModelRepository
 
     /**
      * @return $this
+     * @throws SimplesRunTimeError
      */
     public static function instance()
     {
@@ -61,6 +63,7 @@ class ModelRepository
      * @param Record|array $record
      * @param string $action (null)
      * @return Record
+     * @throws SimplesRunTimeError
      * @throws SimplesValidationError
      */
     public function create($record, string $action = null): Record
@@ -87,6 +90,7 @@ class ModelRepository
      * @param string $action (null)
      * @param bool $trash (false)
      * @return Collection
+     * @throws SimplesRunTimeError
      */
     public function read($record, string $action = null, $trash = false): Collection
     {
@@ -104,6 +108,7 @@ class ModelRepository
      * @param Record|array $record
      * @param string $action (null)
      * @return Record
+     * @throws SimplesRunTimeError
      * @throws SimplesValidationError
      */
     public function update($record, string $action = null): Record
@@ -136,7 +141,7 @@ class ModelRepository
      * @param Record|array $record
      * @param string $action (null)
      * @return Record
-     * @throws SimplesValidationError
+     * @throws SimplesRunTimeError
      */
     public function destroy($record, string $action = null): Record
     {
@@ -150,7 +155,7 @@ class ModelRepository
     /**
      * @param Record|array $record
      * @return Record
-     * @throws SimplesValidationError
+     * @throws SimplesRunTimeError
      */
     public function recycle($record): Record
     {

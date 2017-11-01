@@ -334,8 +334,8 @@ abstract class DataMapper extends ModelAbstract
      */
     protected function getActionFields(string $action, bool $strict = true)
     {
-        if (off($this->getClausules(), 'fields')) {
-            $fields = off($this->getClausules(), 'fields');
+        if (off($this->getClauses(), 'fields')) {
+            $fields = off($this->getClauses(), 'fields');
             if (!is_array($fields)) {
                 $fields = [$fields];
             }

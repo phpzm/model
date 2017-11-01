@@ -168,7 +168,7 @@ class ModelRepository
      * @param array $record
      * @return int
      */
-    public function count(array $record) : int
+    public function count(array $record): int
     {
         return $this->model->count(Record::make($record));
     }
@@ -199,7 +199,18 @@ class ModelRepository
      */
     public function find(array $filters, array $fields): Collection
     {
-        return  $this->model->fields($fields)->read(Record::make($filters));
+        return $this->model->fields($fields)->read(Record::make($filters));
+    }
+
+    /**
+     * @param $id
+     * @return Record
+     */
+    public function findById($id): Record
+    {
+        return $this->search([
+            $this->getModel()->getPrimaryKey() => $id
+        ])->current();
     }
 
     /**

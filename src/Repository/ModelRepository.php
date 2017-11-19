@@ -11,6 +11,7 @@ use Simples\Kernel\Container;
 use Simples\Model\Action;
 use Simples\Model\ModelAbstract;
 use Simples\Model\Repository\Resource\ValidationParser;
+use function array_merge;
 
 /**
  * Class ModelRepository
@@ -211,6 +212,66 @@ class ModelRepository
         return $this->search([
             $this->getModel()->getPrimaryKey() => $id
         ])->current();
+    }
+
+    /**
+     * @param string $id
+     * @param array $search
+     * @param array $order
+     * @return Record
+     */
+    public function previous(string $id, array $search = [], array $order = []): Record
+    {
+        $primaryKey = $this->getModel()->getPrimaryKey();
+        if (!$order) {
+            $order = ["{$primaryKey} DESC"];
+        }
+        $record = Record::make([
+            $this->model->getHashKey() => $id
+        ]);
+
+        $current = $this->model->read($record)->current();
+        $pk = $current->get($primaryKey);
+        $where = array_merge($search, [$primaryKey => "less-than~>{$pk}"]);
+
+        $previous = $this->model
+            ->order($order)
+            ->limit([0, 1])
+            ->read($where);
+
+        if ($previous->current()->size()) {
+            return $previous->current();
+        }
+        return Record::make([]);
+    }
+
+    /**
+     * @param string $id
+     * @param array $search
+     * @param array $order
+     * @return Record
+     */
+    public function next(string $id, array $search = [], array $order = []): Record
+    {
+        $primaryKey = $this->getModel()->getPrimaryKey();
+        if (!$order) {
+            $order = ["{$primaryKey} ASC"];
+        }
+        $record = Record::make([
+            $this->model->getHashKey() => $id
+        ]);
+        $pk = $this->model->read($record)->current()->get($primaryKey);
+        $where = array_merge($search, [$primaryKey => "greater-than~>{$pk}"]);
+
+        $previous = $this->model
+            ->order($order)
+            ->limit([0, 1])
+            ->read($where);
+
+        if ($previous->current()->size()) {
+            return $previous->current();
+        }
+        return Record::make([]);
     }
 
     /**

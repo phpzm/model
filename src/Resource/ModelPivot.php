@@ -135,6 +135,9 @@ trait ModelPivot
         $model = $this->pivotModel($referenced, $relationship);
 
         foreach ($data as $key => $datum) {
+            if (!isset($datum[$local])) {
+                continue;
+            }
             $filter = [$relationship => $datum[$local]];
             $alias = null;
             $trash = false;
@@ -171,14 +174,19 @@ trait ModelPivot
         $trash = false;
         $clean = true;
 
-        $beforeKeys = [];
         $before = $model->read($filter, $alias, $trash, $clean)->all();
+        $after = $record->get($source);
+
+        if (! is_array($before) || !is_array($after)) {
+            return false;
+        }
+
+        $beforeKeys = [];
         foreach ($before as $item) {
             $beforeKeys[] = off($item, $target);
         }
 
         $afterKeys = [];
-        $after = $record->get($source);
         foreach ($after as $item) {
             $afterKeys[] = off($item, $target);
         }

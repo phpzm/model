@@ -314,7 +314,7 @@ abstract class DataMapper extends ModelAbstract
         $count = $this
             ->fields($fields)
             ->limit(null)
-            ->read($record, $alias, false)
+            ->read($record, null, false)
             ->current();
 
         $this->reset();

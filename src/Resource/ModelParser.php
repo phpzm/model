@@ -11,6 +11,7 @@ use Simples\Model\DataMapper;
 use Simples\Persistence\Field;
 use Simples\Persistence\Filter;
 use Simples\Persistence\Fusion;
+use function is_array;
 
 /**
  * Class ModelParser
@@ -29,16 +30,35 @@ trait ModelParser
     {
         $filters = [];
         foreach ($data as $name => $value) {
-            if (is_array($value) && isset($value['filter'])) {
-                $value['filter'] = $this->parseFilterFields($value['filter']);
-                $filters[] = $value;
+            if (is_array($value) && $name === '__filter__') {
+                $filters = $this->parseFilterRules($filters, $value);
                 continue;
             }
             if (!$this->has($name)) {
                 $class = static::class;
-                throw new SimplesRunTimeError("There is no property `{$name}` in `{$class}`");
+                $json = JSON::encode($data);
+                throw new SimplesRunTimeError(
+                    "There is no property `{$name}` in `{$class}` parsing {$json}"
+                );
             }
             $filters[] = Filter::create($this->get($name), $value);
+        }
+        return $filters;
+    }
+
+    /**
+     * @param array $filters
+     * @param array $rules
+     * @return array
+     */
+    protected function parseFilterRules(array $filters, array $rules): array
+    {
+        foreach ($rules as $rule) {
+            if (!isset($rule['filter']) && !is_array($rule['filter'])) {
+                continue;
+            }
+            $rule['filter'] = $this->parseFilterFields($rule['filter']);
+            $filters[] = $rule;
         }
         return $filters;
     }

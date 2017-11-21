@@ -125,7 +125,7 @@ abstract class DataMapper extends ModelAbstract
             ->source($this->getCollection())
             ->relation($this->parseReadRelations($this->fields))
             ->fields($fields)
-            ->where($filters)// TODO: needs review
+            ->where($filters) // TODO: needs review
             ->recover($values);
 
         $this->reset();

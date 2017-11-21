@@ -104,7 +104,7 @@ trait ModelPivot
     /**
      * @param array $referenced
      * @param string $relationship
-     * @return mixed
+     * @return ModelAbstract
      */
     final protected function pivotModel(array $referenced, string $relationship)
     {

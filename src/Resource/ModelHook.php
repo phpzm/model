@@ -5,8 +5,8 @@ namespace Simples\Model\Resource;
 use Simples\Data\Record;
 use Simples\Error\SimplesRunTimeError;
 use Simples\Kernel\Container;
-use Simples\Kernel\Wrapper;
 use Simples\Model\Action;
+use function count;
 
 /**
  * Class ModelHook
@@ -147,7 +147,10 @@ trait ModelHook
      */
     final protected function afterDefaultRead(Record $record, array $data)
     {
-        return $this->pivotSolver('read', $record, $data);
+        if (count($data) === 1) {
+            return $this->pivotSolver('read', $record, $data);
+        }
+        return $data;
     }
 
     /**

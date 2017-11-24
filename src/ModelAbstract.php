@@ -73,6 +73,12 @@ abstract class ModelAbstract extends ModelContract
     protected $hashKey = '_id';
 
     /**
+     * Used to determine the order of reads
+     * @var string
+     */
+    protected $order = '';
+
+    /**
      * Fields to persist the creation object
      * @var array
      */

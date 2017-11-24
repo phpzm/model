@@ -19,11 +19,6 @@ use function is_array;
 abstract class DataMapper extends ModelAbstract
 {
     /**
-     * @var string
-     */
-    protected $order = '';
-
-    /**
      * DataMapper constructor
      */
     public function __construct()

@@ -10,6 +10,7 @@ use Simples\Model\Error\SimplesActionError;
 use Simples\Model\Error\SimplesHookError;
 use Simples\Persistence\Field;
 use Simples\Persistence\Filter;
+use function is_array;
 
 /**
  * Class DataMapper
@@ -17,6 +18,11 @@ use Simples\Persistence\Filter;
  */
 abstract class DataMapper extends ModelAbstract
 {
+    /**
+     * @var string
+     */
+    protected $order = '';
+
     /**
      * DataMapper constructor
      */
@@ -121,11 +127,15 @@ abstract class DataMapper extends ModelAbstract
         if ($clean) {
             $fields = $this->clear($fields);
         }
+
+        $order = is_array($this->order) ? $this->order : [$this->order];
+
         $array = $this
             ->source($this->getCollection())
             ->relation($this->parseReadRelations($this->fields))
             ->fields($fields)
-            ->where($filters) // TODO: needs review
+            ->order($order)
+            ->where($filters)// TODO: needs review
             ->recover($values);
 
         $this->reset();

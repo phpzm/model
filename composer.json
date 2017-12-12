@@ -10,7 +10,7 @@
   ],
   "homepage": "https://github.com/phpzm/model",
   "license": "MIT",
-  "version": "1.14.7",
+  "version": "1.14.8",
   "type": "package",
   "authors": [
     {
@@ -26,7 +26,7 @@
     "php": ">=7.0",
     "phpzm/data": "^1.10.7",
     "phpzm/helper": "^1.6.14",
-    "phpzm/kernel": "^1.11.7",
+    "phpzm/kernel": "^1.11.8",
     "phpzm/persistence": "^1.13.7",
     "phpzm/security": "^1.5.13"
   },

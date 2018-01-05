@@ -39,6 +39,7 @@ trait ModelHook
     /**
      * @param string $action
      * @param Record $record
+     * @throws SimplesRunTimeError
      */
     final public function configureFields(string $action, Record $record)
     {
@@ -90,6 +91,7 @@ trait ModelHook
      * @param Record $record
      * @param mixed $extra
      * @return bool|array
+     * @throws SimplesRunTimeError
      */
     final public function after(string $action, Record $record, $extra = true)
     {

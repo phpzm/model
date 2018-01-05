@@ -2,10 +2,13 @@
 
 namespace Simples\Model;
 
+use Exception;
 use Simples\Data\Collection;
+use Simples\Data\Error\SimplesRecordReadonlyError;
 use Simples\Data\Error\SimplesResourceError;
 use Simples\Data\Error\SimplesValidationError;
 use Simples\Data\Record;
+use Simples\Error\SimplesRunTimeError;
 use Simples\Model\Error\SimplesActionError;
 use Simples\Model\Error\SimplesHookError;
 use Simples\Persistence\Field;
@@ -40,6 +43,8 @@ abstract class DataMapper extends ModelAbstract
      * @param string $alias ('create')
      * @return Record
      * @throws SimplesHookError
+     * @throws SimplesRecordReadonlyError
+     * @throws SimplesRunTimeError
      */
     final public function create($record = null, string $alias = null): Record
     {
@@ -96,6 +101,8 @@ abstract class DataMapper extends ModelAbstract
      * @param bool $clean (false)
      * @return Collection
      * @throws SimplesHookError
+     * @throws SimplesRunTimeError
+     * @throws Exception
      */
     final public function read($record = null, string $alias = null, $trash = false, $clean = false): Collection
     {
@@ -153,6 +160,7 @@ abstract class DataMapper extends ModelAbstract
      * @throws SimplesActionError
      * @throws SimplesHookError
      * @throws SimplesResourceError
+     * @throws SimplesRunTimeError
      */
     final public function update($record = null, string $alias = null, bool $trash = false): Record
     {
@@ -216,6 +224,7 @@ abstract class DataMapper extends ModelAbstract
      * @throws SimplesActionError
      * @throws SimplesHookError
      * @throws SimplesResourceError
+     * @throws SimplesRunTimeError
      */
     final public function destroy($record = null, string $alias = null): Record
     {
@@ -280,6 +289,10 @@ abstract class DataMapper extends ModelAbstract
      * Recycle a destroyed record
      * @param array|Record $record (null)
      * @return Record
+     * @throws SimplesActionError
+     * @throws SimplesHookError
+     * @throws SimplesResourceError
+     * @throws SimplesRunTimeError
      * @throws SimplesValidationError
      */
     final public function recycle($record = null): Record
@@ -303,7 +316,10 @@ abstract class DataMapper extends ModelAbstract
      * Get total of records based on filters
      * @param Record $record
      * @return int
+     * @throws Exception
      * @throws SimplesActionError
+     * @throws SimplesHookError
+     * @throws SimplesRunTimeError
      */
     final public function count(Record $record): int
     {

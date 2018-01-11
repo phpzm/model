@@ -2,6 +2,7 @@
 
 namespace Simples\Model;
 
+use function array_merge;
 use Exception;
 use Simples\Data\Collection;
 use Simples\Data\Error\SimplesRecordReadonlyError;
@@ -131,6 +132,12 @@ abstract class DataMapper extends ModelAbstract
         }
 
         $order = is_array($this->order) ? $this->order : [$this->order];
+
+        $where = off($this->getClauses(), 'where', []);
+        if ($where) {
+            $filters = array_merge($filters, $where);
+            $values = array_merge($values, off($this->getClauses(), 'values', []));
+        }
 
         $array = $this
             ->source($this->getCollection())

@@ -175,6 +175,16 @@ class ModelRepository
     }
 
     /**
+     * @param array $fields
+     * @return ModelRepository
+     */
+    public function fields(array $fields)
+    {
+        $this->getModel()->fields($fields);
+        return $this;
+    }
+
+    /**
      * @param array $filter
      * @param array $order (null)
      * @param int $start

@@ -3,7 +3,6 @@
 namespace Simples\Model\Resource;
 
 use Simples\Data\Record;
-use Simples\Model\Error\SimplesActionError;
 use Simples\Model\ModelAbstract;
 use Simples\Persistence\Field;
 
@@ -53,7 +52,6 @@ trait ModelAggregation
      * @param string $field (null)
      * @param array $group (null)
      * @return mixed
-     * @throws SimplesActionError
      */
     public function aggregate(Record $filter, string $alias, string $type, string $field = null, array $group = null)
     {
@@ -74,7 +72,7 @@ trait ModelAggregation
             ->fields($fields)
             ->limit(null)
             ->group($group)
-            ->read($filter, $alias, false)
+            ->read($filter, null, false)
             ->current();
 
         $this->reset();

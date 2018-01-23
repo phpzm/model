@@ -11,7 +11,6 @@ use Simples\Model\DataMapper;
 use Simples\Persistence\Field;
 use Simples\Persistence\Filter;
 use Simples\Persistence\Fusion;
-use function is_array;
 
 /**
  * Class ModelParser
@@ -50,6 +49,7 @@ trait ModelParser
      * @param array $filters
      * @param array $rules
      * @return array
+     * @throws Exception
      */
     protected function parseFilterRules(array $filters, array $rules): array
     {
@@ -91,6 +91,7 @@ trait ModelParser
     /**
      * @param array $fields
      * @return array
+     * @throws SimplesRunTimeError
      */
     protected function parseReadRelations(array $fields = []): array
     {
@@ -123,6 +124,7 @@ trait ModelParser
      * @param string $hashKey
      * @param bool $trash (false)
      * @return Record
+     * @throws SimplesRunTimeError
      */
     protected function previous(Record $record, string $hashKey, bool $trash = false): Record
     {
@@ -161,6 +163,7 @@ trait ModelParser
      * @param Record $previous (null)
      * @param bool $calculate (false)
      * @return Record
+     * @throws SimplesRunTimeError
      */
     public function configureRecord(
         string $action,
@@ -251,6 +254,7 @@ trait ModelParser
     /**
      * @param int $options
      * @return string
+     * @throws SimplesRunTimeError
      */
     public function getJSON(int $options = 0)
     {
